@@ -7,6 +7,27 @@ from src.overcome.position.evaluation import Evaluation
 
 
 class Overcome:
+    """
+    This service calculates the bid/ask outcome of every row in an input
+    dataframe with stock exchange candle bars data.
+
+    The input dataframe is expected to contain a history of the results of a
+    product of the stocks exchange market with at least the values open, high,
+    and low. And the rows in the input dataframe must be sorted by time.
+
+    Applying the overcome simulates to open a position on buying and a position
+    on selling on every row in the input dataframe. Then it follows up all rows
+    in the timeline, and it attempts to close every simulated position based on
+    the stop loss and take profit predefined values.
+
+    If the evaluation finds out that the row reaches the take profit then one of
+    the new columns will keep exactly the take profit value. Otherwise, if the
+    row reaches the stop loss the column will keep the stop loss value.
+
+    The new columns are two, one for buying earnings and one for selling
+    earnings. So, depending on the simulated operation, the overcome can be kept
+    in one or another. One for every opened position in every row.
+    """
     def __init__(
             self,
             position_factory: Factory,
