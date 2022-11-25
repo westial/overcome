@@ -37,7 +37,6 @@ class Overcome:
         self.__position_factory = position_factory
         self.__tp = take_profit
         self.__sl = stop_loss
-        self.__loss_value = stop_loss * (-1)
         self.__opened_buy_positions = set()
         self.__opened_sell_positions = set()
 
@@ -49,7 +48,7 @@ class Overcome:
         :param to: input dataframe
         :return: the new columns in addition to the input dataframe
         """
-        to[["earn_buying", "earn_selling"]] = 0
+        to.loc[:, ["earn_buying", "earn_selling"]] = 0
         for index, row in to.iterrows():
             self.__set_earnings(to, row)
             self.__collect(index, row)
@@ -77,18 +76,33 @@ class Overcome:
         """
         high = with_values["high"]
         low = with_values["low"]
-        remaining_buy_positions = set()
-        while len(self.__opened_buy_positions):
-            position: Position = self.__opened_buy_positions.pop()
-            overcome = position.evaluate(low, high, self.__tp, self.__sl)
-            if Evaluation.BUY_WINS == overcome:
-                into.at[position.index, "earn_buying"] = self.__tp
-            elif Evaluation.SELL_WINS == overcome:
-                into.at[position.index, "earn_selling"] = self.__tp
-            elif Evaluation.BUY_LOSES == overcome:
-                into.at[position.index, "earn_buying"] = self.__loss_value
-            elif Evaluation.SELL_LOSES == overcome:
-                into.at[position.index, "earn_selling"] = self.__loss_value
+        self.__opened_buy_positions = self.__update_earnings(
+            low, high, self.__tp, self.__sl, into, self.__opened_buy_positions,
+            "earn_buying", self.__evaluate_buying)
+        self.__opened_sell_positions = self.__update_earnings(
+            low, high, self.__tp, self.__sl, into, self.__opened_sell_positions,
+            "earn_selling", self.__evaluate_selling)
+
+    @staticmethod
+    def __evaluate_buying(position, low, high, tp, sl):
+        return position.evaluate_buying(low, high, tp, sl)
+
+    @staticmethod
+    def __evaluate_selling(position, low, high, tp, sl):
+        return position.evaluate_selling(low, high, tp, sl)
+
+    @staticmethod
+    def __update_earnings(
+            low, high, tp, sl, df, opened_positions: set,
+            column, evaluate: callable):
+        remaining_positions = set()
+        while len(opened_positions):
+            position: Position = opened_positions.pop()
+            overcome = evaluate(position, low, high, tp, sl)
+            if Evaluation.WINS == overcome:
+                df.loc[position.index, column] = tp
+            elif Evaluation.LOSES == overcome:
+                df.loc[position.index, column] = sl * (-1)
             else:
-                remaining_buy_positions.add(position)
-        self.__opened_buy_positions = remaining_buy_positions
+                remaining_positions.add(position)
+        return remaining_positions

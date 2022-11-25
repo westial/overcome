@@ -20,7 +20,7 @@ class Position:
     def index(self):
         return self.__index
 
-    def evaluate(
+    def evaluate_buying(
             self,
             low: np.float64,
             high: np.float64,
@@ -28,23 +28,40 @@ class Position:
             stop_loss: np.float64
     ) -> Evaluation:
         """
-        Evaluate whether the position closes and in which operation, buying or
-        selling.
+        Evaluate whether the position closes on buying operation.
         :param low: candle bars low value
         :param high: candle bars high value
         :param take_profit: value set as profit boundary
         :param stop_loss:  value set as loss boundary
-        :return: Return an Evaluation value describing whether it loses or wins
-        and from which operation.
+        :return: Return an Evaluation value describing whether buying loses or
+        wins.
         """
         if self.__wins_on_buying(high, take_profit):
-            return Evaluation.BUY_WINS
-        if self.__wins_on_selling(low, take_profit):
-            return Evaluation.SELL_WINS
+            return Evaluation.WINS
         if self.__loses_on_buying(low, stop_loss):
-            return Evaluation.BUY_LOSES
+            return Evaluation.LOSES
+        return Evaluation.NONE
+
+    def evaluate_selling(
+            self,
+            low: np.float64,
+            high: np.float64,
+            take_profit: np.float64,
+            stop_loss: np.float64
+    ) -> Evaluation:
+        """
+        Evaluate whether the position closes on selling operation.
+        :param low: candle bars low value
+        :param high: candle bars high value
+        :param take_profit: value set as profit boundary
+        :param stop_loss:  value set as loss boundary
+        :return: Return an Evaluation value describing whether selling loses or
+        wins.
+        """
+        if self.__wins_on_selling(low, take_profit):
+            return Evaluation.WINS
         if self.__loses_on_selling(high, stop_loss):
-            return Evaluation.SELL_LOSES
+            return Evaluation.LOSES
         return Evaluation.NONE
 
     def __wins_on_buying(self, high: np.float64, take_profit: np.float64):

@@ -7,6 +7,7 @@ from pandas import DataFrame
 from src.overcome.overcome import Overcome
 from src.overcome.position.factory import Factory
 from src.overcome.position.position import Position
+from src.overcome.position.precisefactory import PreciseFactory
 
 
 @given("any data frame with a few rows")
@@ -63,6 +64,21 @@ def step_impl(context):
     assert 0 == context.df["earn_selling"][0]
 
 
+def __append_expected_earnings(context, row):
+    if "expected_to_earn_buying" not in context:
+        context.expected_to_earn_buying = np.array([])
+    if "expected_to_earn_selling" not in context:
+        context.expected_to_earn_selling = np.array([])
+    if "expected_buy_earn" in row.headings:
+        context.expected_to_earn_buying = np.append(
+            context.expected_to_earn_buying,
+            np.float64(row["expected_buy_earn"]))
+    if "expected_sell_earn" in row.headings:
+        context.expected_to_earn_selling = np.append(
+            context.expected_to_earn_selling,
+            np.float64(row["expected_sell_earn"]))
+
+
 @given("a data frame with the following rows")
 def step_impl(context):
     table = {
@@ -76,6 +92,7 @@ def step_impl(context):
         table["close"].append(np.float64(row["close"]))
         table["high"].append(np.float64(row["high"]))
         table["low"].append(np.float64(row["low"]))
+        __append_expected_earnings(context, row)
     context.df = DataFrame(table)
 
 
@@ -118,3 +135,23 @@ def step_impl(context):
     "the starting position earnings for selling value is equal to the negative value of stop loss")
 def step_impl(context):
     assert context.stop_loss == context.df["earn_selling"][0] * (-1)
+
+
+@then("the expected earnings match the results")
+def step_impl(context):
+    assert np.array_equal(
+        np.sign(np.array(context.df["earn_buying"])),
+        np.sign(np.array(context.expected_to_earn_buying))
+    )
+    assert np.array_equal(
+        np.sign(np.array(context.df["earn_selling"])),
+        np.sign(np.array(context.expected_to_earn_selling))
+    )
+
+
+@when("I apply the real overcome to the data frame")
+def step_impl(context):
+    position_factory = PreciseFactory(context.position_threshold)
+    overcome = Overcome(position_factory, context.take_profit, context.stop_loss)
+    context.result = overcome.apply(context.df)
+    context.overcome = overcome
