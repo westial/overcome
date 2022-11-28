@@ -4,12 +4,12 @@ import numpy as np
 from behave import *
 from pandas import DataFrame
 
-from src.overcome.position.basicpositions import BasicPositions
-from src.overcome.position.positions import Positions
 from src.overcome.overcome import Overcome
+from src.overcome.position.buying import Buying
 from src.overcome.position.factory import Factory
 from src.overcome.position.position import Position
 from src.overcome.position.precisefactory import PreciseFactory
+from src.overcome.position.selling import Selling
 
 
 @given("any data frame with a few rows")
@@ -27,14 +27,17 @@ def step_impl(context):
 def step_impl(context):
     def create_position_stub(*args):
         return Position(*args, context.position_threshold)
-    earnings = BasicPositions()
+
+    buying = Buying()
+    selling = Selling()
     position_factory = Mock(spec=Factory)
     position_factory.create = Mock(side_effect=create_position_stub)
     overcome = Overcome(
         position_factory,
         context.take_profit,
         context.stop_loss,
-        earnings)
+        buying,
+        selling)
     context.result = overcome.apply(context.df)
     context.overcome = overcome
     context.position_factory = position_factory
@@ -108,7 +111,8 @@ def step_impl(context, tp):
     context.take_profit = np.float64(tp)
 
 
-@then("the starting position earnings for buying value is equal to the take profit")
+@then(
+    "the starting position earnings for buying value is equal to the take profit")
 def step_impl(context):
     assert context.take_profit == context.df["earn_buying"][0]
 
@@ -123,7 +127,8 @@ def step_impl(context):
     assert 0 == context.df["earn_buying"][0]
 
 
-@then("the starting position earnings for selling value is equal to the take profit")
+@then(
+    "the starting position earnings for selling value is equal to the take profit")
 def step_impl(context):
     assert context.take_profit == context.df["earn_selling"][0]
 
@@ -133,7 +138,8 @@ def step_impl(context, sl):
     context.stop_loss = np.float64(sl)
 
 
-@then("the starting position earnings for buying value is equal to the negative value of stop loss")
+@then(
+    "the starting position earnings for buying value is equal to the negative value of stop loss")
 def step_impl(context):
     assert context.stop_loss == context.df["earn_buying"][0] * (-1)
 
@@ -159,11 +165,13 @@ def step_impl(context):
 @when("I apply the real overcome to the data frame")
 def step_impl(context):
     position_factory = PreciseFactory(context.position_threshold)
-    earnings = BasicPositions()
+    buying = Buying()
+    selling = Selling()
     overcome = Overcome(
         position_factory,
         context.take_profit,
         context.stop_loss,
-        earnings)
+        buying,
+        selling)
     context.result = overcome.apply(context.df)
     context.overcome = overcome

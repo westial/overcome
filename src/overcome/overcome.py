@@ -33,10 +33,12 @@ class Overcome:
             position_factory: Factory,
             take_profit: np.float64,
             stop_loss: np.float64,
-            positions: Positions
+            buying: Positions,
+            selling: Positions
 
     ):
-        self.__positions = positions
+        self.__buying = buying
+        self.__selling = selling
         self.__position_factory = position_factory
         self.__tp = take_profit
         self.__sl = stop_loss
@@ -79,9 +81,9 @@ class Overcome:
         """
         high = with_values["high"]
         low = with_values["low"]
-        self.__opened_buy_positions = self.__positions.update_buying(
+        self.__opened_buy_positions = self.__buying.update(
             low, high, self.__tp, self.__sl, into, self.__opened_buy_positions,
             "earn_buying")
-        self.__opened_sell_positions = self.__positions.update_selling(
+        self.__opened_sell_positions = self.__selling.update(
             low, high, self.__tp, self.__sl, into, self.__opened_sell_positions,
             "earn_selling")
