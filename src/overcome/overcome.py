@@ -42,8 +42,6 @@ class Overcome:
         self.__position_factory = position_factory
         self.__tp = take_profit
         self.__sl = stop_loss
-        self.__opened_buy_positions = set()
-        self.__opened_sell_positions = set()
 
     def apply(self, to: DataFrame) -> DataFrame:
         """
@@ -67,8 +65,8 @@ class Overcome:
         """
         value = values["close"]
         position: Position = self.__position_factory.create(index, value)
-        self.__opened_buy_positions.add(position)
-        self.__opened_sell_positions.add(position)
+        self.__buying.insert(position)
+        self.__selling.insert(position)
 
     def __set_earnings(self, into: DataFrame, with_values: Series):
         """
@@ -81,9 +79,7 @@ class Overcome:
         """
         high = with_values["high"]
         low = with_values["low"]
-        self.__opened_buy_positions = self.__buying.update(
-            low, high, self.__tp, self.__sl, into, self.__opened_buy_positions,
-            "earn_buying")
-        self.__opened_sell_positions = self.__selling.update(
-            low, high, self.__tp, self.__sl, into, self.__opened_sell_positions,
-            "earn_selling")
+        self.__buying.update(
+            low, high, self.__tp, self.__sl, into, "earn_buying")
+        self.__selling.update(
+            low, high, self.__tp, self.__sl, into, "earn_selling")

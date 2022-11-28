@@ -11,15 +11,14 @@ class Buying(BasePositions):
             take_profit,
             stop_loss,
             df: DataFrame,
-            opened_positions: set,
             column):
-        return self._update(
+        self._items = self._update(
             low,
             high,
             take_profit,
             stop_loss,
             df,
-            opened_positions,
+            self._items,
             column,
             self.__evaluate_buying)
 

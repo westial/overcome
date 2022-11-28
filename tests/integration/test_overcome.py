@@ -4,7 +4,9 @@ import numpy as np
 import pandas as pd
 
 from src.overcome.overcome import Overcome
+from src.overcome.position.buying import Buying
 from src.overcome.position.precisefactory import PreciseFactory
+from src.overcome.position.selling import Selling
 
 
 class TestOvercome(TestCase):
@@ -18,7 +20,11 @@ class TestOvercome(TestCase):
         ).sort_index()
         position_factory = PreciseFactory(precision_threshold=0.00001)
         overcome = Overcome(
-            position_factory, np.float64(0.001), np.float64(0.001))
+            position_factory,
+            np.float64(0.001),
+            np.float64(0.001),
+            Buying(),
+            Selling())
         result = overcome.apply(df)
         assert result["earn_buying"].sum() == result["earn_selling"].sum() * (-1)
 
@@ -26,6 +32,10 @@ class TestOvercome(TestCase):
         df = pd.read_parquet("../samples/live15m.parquet").sort_index()
         position_factory = PreciseFactory(precision_threshold=0.00001)
         overcome = Overcome(
-            position_factory, np.float64(0.005), np.float64(0.0005))
+            position_factory,
+            np.float64(0.005),
+            np.float64(0.0005),
+            Buying(),
+            Selling())
         result = overcome.apply(df[:10000])
         assert False

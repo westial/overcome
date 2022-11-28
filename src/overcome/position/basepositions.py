@@ -8,6 +8,11 @@ from src.overcome.position.positions import Positions
 
 
 class BasePositions(Positions, ABC):
+    _items = set()
+
+    def insert(self, position: Position):
+        self._items.add(position)
+
     @staticmethod
     def _update(
             low,
