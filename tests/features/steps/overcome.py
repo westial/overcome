@@ -4,6 +4,8 @@ import numpy as np
 from behave import *
 from pandas import DataFrame
 
+from src.overcome.position.basicpositions import BasicPositions
+from src.overcome.position.positions import Positions
 from src.overcome.overcome import Overcome
 from src.overcome.position.factory import Factory
 from src.overcome.position.position import Position
@@ -25,9 +27,14 @@ def step_impl(context):
 def step_impl(context):
     def create_position_stub(*args):
         return Position(*args, context.position_threshold)
+    earnings = BasicPositions()
     position_factory = Mock(spec=Factory)
     position_factory.create = Mock(side_effect=create_position_stub)
-    overcome = Overcome(position_factory, context.take_profit, context.stop_loss)
+    overcome = Overcome(
+        position_factory,
+        context.take_profit,
+        context.stop_loss,
+        earnings)
     context.result = overcome.apply(context.df)
     context.overcome = overcome
     context.position_factory = position_factory
@@ -152,6 +159,11 @@ def step_impl(context):
 @when("I apply the real overcome to the data frame")
 def step_impl(context):
     position_factory = PreciseFactory(context.position_threshold)
-    overcome = Overcome(position_factory, context.take_profit, context.stop_loss)
+    earnings = BasicPositions()
+    overcome = Overcome(
+        position_factory,
+        context.take_profit,
+        context.stop_loss,
+        earnings)
     context.result = overcome.apply(context.df)
     context.overcome = overcome

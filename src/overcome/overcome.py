@@ -1,9 +1,9 @@
 import numpy as np
 from pandas import DataFrame, Series
 
+from src.overcome.position.positions import Positions
 from src.overcome.position.factory import Factory
 from src.overcome.position.position import Position
-from src.overcome.position.evaluation import Evaluation
 
 
 class Overcome:
@@ -32,8 +32,11 @@ class Overcome:
             self,
             position_factory: Factory,
             take_profit: np.float64,
-            stop_loss: np.float64
+            stop_loss: np.float64,
+            positions: Positions
+
     ):
+        self.__positions = positions
         self.__position_factory = position_factory
         self.__tp = take_profit
         self.__sl = stop_loss
@@ -76,33 +79,9 @@ class Overcome:
         """
         high = with_values["high"]
         low = with_values["low"]
-        self.__opened_buy_positions = self.__update_earnings(
+        self.__opened_buy_positions = self.__positions.update_buying(
             low, high, self.__tp, self.__sl, into, self.__opened_buy_positions,
-            "earn_buying", self.__evaluate_buying)
-        self.__opened_sell_positions = self.__update_earnings(
+            "earn_buying")
+        self.__opened_sell_positions = self.__positions.update_selling(
             low, high, self.__tp, self.__sl, into, self.__opened_sell_positions,
-            "earn_selling", self.__evaluate_selling)
-
-    @staticmethod
-    def __evaluate_buying(position, low, high, tp, sl):
-        return position.evaluate_buying(low, high, tp, sl)
-
-    @staticmethod
-    def __evaluate_selling(position, low, high, tp, sl):
-        return position.evaluate_selling(low, high, tp, sl)
-
-    @staticmethod
-    def __update_earnings(
-            low, high, tp, sl, df, opened_positions: set,
-            column, evaluate: callable):
-        remaining_positions = set()
-        while len(opened_positions):
-            position: Position = opened_positions.pop()
-            overcome = evaluate(position, low, high, tp, sl)
-            if Evaluation.WINS == overcome:
-                df.loc[position.index, column] = tp
-            elif Evaluation.LOSES == overcome:
-                df.loc[position.index, column] = sl * (-1)
-            else:
-                remaining_positions.add(position)
-        return remaining_positions
+            "earn_selling")
