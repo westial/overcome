@@ -12,7 +12,7 @@ class Buying(BasePositions):
             stop_loss,
             df: DataFrame,
             column):
-        self._items = self._update(
+        return self._update(
             low,
             high,
             take_profit,

@@ -53,7 +53,7 @@ class Overcome:
         """
         to.loc[:, ["earn_buying", "earn_selling"]] = 0
         for index, row in to.iterrows():
-            self.__set_earnings(to, row)
+            to = self.__set_earnings(to, row)
             self.__collect(index, row)
         return to
 
@@ -72,14 +72,15 @@ class Overcome:
         """
         Calculate earnings comparing the new input values and the opened
         positions values in both sides, buying and selling. Then set the
-        earnings value into the dataframe. The input dataframe is modified in
-        place.
+        earnings value into the dataframe and returns the dataframe.
         :param into: dataframe to set the value in
         :param with_values: values to compare opened positions with
+        :return the updated dataframe
         """
         high = with_values["high"]
         low = with_values["low"]
-        self.__buying.update(
+        into = self.__buying.update(
             low, high, self.__tp, self.__sl, into, "earn_buying")
-        self.__selling.update(
+        into = self.__selling.update(
             low, high, self.__tp, self.__sl, into, "earn_selling")
+        return into

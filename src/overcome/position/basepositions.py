@@ -13,8 +13,8 @@ class BasePositions(Positions, ABC):
     def insert(self, position: Position):
         self._items.add(position)
 
-    @staticmethod
     def _update(
+            self,
             low,
             high,
             take_profit,
@@ -33,4 +33,5 @@ class BasePositions(Positions, ABC):
                 df.loc[position.index, column] = stop_loss * (-1)
             else:
                 remaining_positions.add(position)
-        return remaining_positions
+        self._items = remaining_positions
+        return df
