@@ -81,3 +81,8 @@ Feature: Overcome data addition
     When I apply the real overcome to the data frame
     Then the expected earnings match the results
 
+  Scenario: It keeps the original index
+    Given a data frame with a few rows with a non-numerical index
+    When I apply the overcome to the data frame
+    Then the result dataframe index is the same as the input dataframe
+

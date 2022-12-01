@@ -38,7 +38,7 @@ def step_impl(context):
         context.stop_loss,
         buying,
         selling)
-    context.result = overcome.apply(context.df)
+    context.result = overcome.X__apply(context.df)
     context.overcome = overcome
     context.position_factory = position_factory
 
@@ -46,8 +46,8 @@ def step_impl(context):
 @then("there is a buying and selling position pointing to every row")
 def step_impl(context):
     calls = []
-    for index in context.df.index:
-        call_ = call(index, context.df.loc[index]["close"])
+    for index in range(0, len(context.df) - 1):
+        call_ = call(index, context.df.iloc[index]["close"])
         calls.append(call_)
     context.position_factory.create.assert_has_calls(calls)
 
@@ -175,3 +175,20 @@ def step_impl(context):
         selling)
     context.result = overcome.apply(context.df)
     context.overcome = overcome
+
+
+@given("a data frame with a few rows with a non-numerical index")
+def step_impl(context):
+    context.df = DataFrame(
+        [
+            ["a1", "b1", 1.0, 0, 0],
+            ["a2", "b2", 2.0, 0, 0],
+            ["a3", "b3", 3.0, 0, 0]],
+        index=["2020-11-01", "2021-12-01", "2022-04-30"],
+        columns=["a", "b", "close", "high", "low"])
+    context.original_index = context.df.index
+
+
+@then("the result dataframe index is the same as the input dataframe")
+def step_impl(context):
+    assert 0 == len(context.original_index.difference(context.result.index))
