@@ -31,8 +31,8 @@ class Overcome:
     def __init__(
             self,
             position_factory: Factory,
-            take_profit: np.float64,
-            stop_loss: np.float64,
+            take_profit: np.float32,
+            stop_loss: np.float32,
             buying: Positions,
             selling: Positions
 
@@ -53,7 +53,7 @@ class Overcome:
         :param to: input dataframe
         :return: the new columns in addition to the input dataframe
         """
-        to.loc[:, ["earn_buying", "earn_selling"]] = 0
+        to.loc[:, ["earn_buying", "earn_selling"]] = 0.0
         for index, row in to.iterrows():
             to = self.__set_earnings(to, row)
             self.__collect(index, row)
@@ -77,8 +77,8 @@ class Overcome:
         :param to: input dataframe
         :return: the new columns in addition to the input dataframe
         """
-        self.__earn_buying = np.zeros([len(to), 1], dtype=np.float64)
-        self.__earn_selling = np.zeros([len(to), 1], dtype=np.float64)
+        self.__earn_buying = np.zeros([len(to), 1], dtype=np.float32)
+        self.__earn_selling = np.zeros([len(to), 1], dtype=np.float32)
         for index, row in enumerate(to[["high", "low", "close"]].itertuples(index=False)):
             self.X__set_earnings(row[0], row[1])
             self.X__collect(index, row[2])

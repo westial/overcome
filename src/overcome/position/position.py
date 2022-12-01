@@ -4,7 +4,7 @@ from src.overcome.position.evaluation import Evaluation
 
 
 class Position:
-    def __init__(self, index, value: np.float64, threshold: float):
+    def __init__(self, index, value: np.float32, threshold: float):
         """
         Constructor.
         :param index: index within the dataframe. Any type
@@ -22,10 +22,10 @@ class Position:
 
     def evaluate_buying(
             self,
-            low: np.float64,
-            high: np.float64,
-            take_profit: np.float64,
-            stop_loss: np.float64
+            low: np.float32,
+            high: np.float32,
+            take_profit: np.float32,
+            stop_loss: np.float32
     ) -> Evaluation:
         """
         Evaluate whether the position closes on buying operation.
@@ -44,10 +44,10 @@ class Position:
 
     def evaluate_selling(
             self,
-            low: np.float64,
-            high: np.float64,
-            take_profit: np.float64,
-            stop_loss: np.float64
+            low: np.float32,
+            high: np.float32,
+            take_profit: np.float32,
+            stop_loss: np.float32
     ) -> Evaluation:
         """
         Evaluate whether the position closes on selling operation.
@@ -64,18 +64,18 @@ class Position:
             return Evaluation.LOSES
         return Evaluation.NONE
 
-    def __wins_on_buying(self, high: np.float64, take_profit: np.float64):
+    def __wins_on_buying(self, high: np.float32, take_profit: np.float32):
         limit = self.__value + take_profit
         return np.isclose(high, limit, self.__threshold) or high > limit
 
-    def __loses_on_buying(self, low: np.float64, stop_loss: np.float64):
+    def __loses_on_buying(self, low: np.float32, stop_loss: np.float32):
         limit = self.__value - stop_loss
         return np.isclose(low, limit, self.__threshold) or low < limit
 
-    def __wins_on_selling(self, low: np.float64, take_profit: np.float64):
+    def __wins_on_selling(self, low: np.float32, take_profit: np.float32):
         limit = self.__value - take_profit
         return np.isclose(low, limit, self.__threshold) or low < limit
 
-    def __loses_on_selling(self, high: np.float64, stop_loss: np.float64):
+    def __loses_on_selling(self, high: np.float32, stop_loss: np.float32):
         limit = self.__value + stop_loss
         return np.isclose(high, limit, self.__threshold) or high > limit

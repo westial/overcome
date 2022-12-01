@@ -8,5 +8,5 @@ class PreciseFactory(Factory):
     def __init__(self, precision_threshold: float):
         self.__threshold = precision_threshold
 
-    def create(self, index, value: np.float64):
+    def create(self, index, value: np.float32):
         return Position(index, value, self.__threshold)

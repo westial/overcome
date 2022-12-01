@@ -21,8 +21,8 @@ class TestOvercome(TestCase):
         position_factory = PreciseFactory(precision_threshold=0.00001)
         overcome = Overcome(
             position_factory,
-            np.float64(0.001),
-            np.float64(0.001),
+            np.float32(0.001),
+            np.float32(0.001),
             Buying(),
             Selling())
         result = overcome.apply(df)
@@ -33,8 +33,8 @@ class TestOvercome(TestCase):
         position_factory = PreciseFactory(precision_threshold=0.00001)
         overcome = Overcome(
             position_factory,
-            np.float64(0.005),
-            np.float64(0.0005),
+            np.float32(0.005),
+            np.float32(0.0005),
             Buying(),
             Selling())
         result = overcome.apply(df[:10000])

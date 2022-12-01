@@ -5,5 +5,5 @@ import numpy as np
 
 class Factory(ABC):
     @abstractmethod
-    def create(self, index, value: np.float64):
+    def create(self, index, value: np.float32):
         pass

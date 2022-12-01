@@ -82,11 +82,11 @@ def __append_expected_earnings(context, row):
     if "expected_buy_earn" in row.headings:
         context.expected_to_earn_buying = np.append(
             context.expected_to_earn_buying,
-            np.float64(row["expected_buy_earn"]))
+            np.float32(row["expected_buy_earn"]))
     if "expected_sell_earn" in row.headings:
         context.expected_to_earn_selling = np.append(
             context.expected_to_earn_selling,
-            np.float64(row["expected_sell_earn"]))
+            np.float32(row["expected_sell_earn"]))
 
 
 @given("a data frame with the following rows")
@@ -99,16 +99,16 @@ def step_impl(context):
     for index, row in enumerate(context.table):
         if "starting" == row["comment"]:
             context.starting_index = index
-        table["close"].append(np.float64(row["close"]))
-        table["high"].append(np.float64(row["high"]))
-        table["low"].append(np.float64(row["low"]))
+        table["close"].append(np.float32(row["close"]))
+        table["high"].append(np.float32(row["high"]))
+        table["low"].append(np.float32(row["low"]))
         __append_expected_earnings(context, row)
     context.df = DataFrame(table)
 
 
 @step("a take profit configuration as {tp}")
 def step_impl(context, tp):
-    context.take_profit = np.float64(tp)
+    context.take_profit = np.float32(tp)
 
 
 @then(
@@ -135,7 +135,7 @@ def step_impl(context):
 
 @step("a stop loss configuration as {sl}")
 def step_impl(context, sl):
-    context.stop_loss = np.float64(sl)
+    context.stop_loss = np.float32(sl)
 
 
 @then(
