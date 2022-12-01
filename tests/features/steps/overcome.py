@@ -61,7 +61,7 @@ def step_impl(context):
 @given("any data frame with one row only")
 def step_impl(context):
     context.df = DataFrame(
-        [[2.222, 1.111, 0.001]], columns=["high", "low", "close"])
+        [[1.111, 2.222, 0.001]], columns=["low", "high", "close"])
 
 
 @then("there is a new value as 0 in a new column about buying earnings")

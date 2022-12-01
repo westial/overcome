@@ -51,12 +51,7 @@ class Overcome:
         "earn_selling" with the earnings for every row according to the context
         take profit, stop loss and values in the row as close, high and low.
 
-        The index to map the rows in both, the earning updates and in the
-        positions collection is a default incremental numeric range. That makes
-        the data package simpler and numpy may be used instead of the original
-        heavy dataframe.
-
-        First we create the new columns as simple numpy arrays. We process the
+        First we convert the targeted columns into numpy arrays. We process the
         comparisons and changes over these arrays, and then we merge them into
         the original dataframe as new columns.
 
@@ -65,7 +60,12 @@ class Overcome:
         """
         self.__earn_buying = np.zeros([len(to), 1], dtype=np.float32)
         self.__earn_selling = np.zeros([len(to), 1], dtype=np.float32)
-        for index, row in enumerate(to[["high", "low", "close"]].itertuples(index=False)):
+        market_values = to[["high", "low", "close"]].to_numpy(dtype=np.float32)
+        market_values_iterator = np.nditer(
+            market_values,
+            order='C',
+            flags=['external_loop'])
+        for index, row in enumerate(market_values_iterator):
             self.__set_earnings(row[0], row[1])
             self.__collect(index, row[2])
         to["earn_buying"] = self.__earn_buying
