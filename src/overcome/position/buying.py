@@ -1,5 +1,4 @@
 import numpy as np
-from pandas import DataFrame
 
 from src.overcome.position.basepositions import BasePositions
 
@@ -11,26 +10,8 @@ class Buying(BasePositions):
             high,
             take_profit,
             stop_loss,
-            df: DataFrame,
-            column):
-        return self._update(
-            low,
-            high,
-            take_profit,
-            stop_loss,
-            df,
-            self._items,
-            column,
-            self.__evaluate_buying)
-
-    def X_update(
-            self,
-            low,
-            high,
-            take_profit,
-            stop_loss,
             data: np.ndarray):
-        return self._X_update(
+        return self._update(
             low,
             high,
             take_profit,

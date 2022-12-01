@@ -38,7 +38,7 @@ def step_impl(context):
         context.stop_loss,
         buying,
         selling)
-    context.result = overcome.X__apply(context.df)
+    context.result = overcome.apply(context.df)
     context.overcome = overcome
     context.position_factory = position_factory
 
