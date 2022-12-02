@@ -1,77 +1,82 @@
-"""
-cposition package entry point. cposition is a c-like high performance approach
-to get the buying and selling earnings overcome.
-"""
 import numpy as np
 
-from src.overcome.position.evaluation import Evaluation
-from src.overcome.position.position import Position
+from src.overcome.cposition.evaluation import Evaluation
 
 
-def calculate_earnings(
-        high_low_close: np.ndarray,
-        take_profit,
-        stop_loss,
-        create_position: callable):
-    earn_buying = np.zeros([len(high_low_close), 1], dtype=np.float32)
-    earn_selling = np.zeros([len(high_low_close), 1], dtype=np.float32)
-    open_buying = set()
-    open_selling = set()
-    market_values_iterator = np.nditer(
-        high_low_close,
-        order='C',
-        flags=['external_loop'])
-    for index, row in enumerate(market_values_iterator):
-        __set_earnings(
-            row[0],
-            row[1],
-            take_profit,
-            stop_loss,
-            earn_buying,
-            earn_selling,
-            open_buying,
-            open_selling)
-        __collect(index, row[2], create_position, open_buying, open_selling)
-    return earn_buying, earn_selling
+class CPosition:
+    def __init__(
+            self,
+            index,
+            value: np.float32,
+            threshold: np.float32,
+            wins_on_buying: callable,
+            loses_on_buying: callable,
+            wins_on_selling: callable,
+            loses_on_selling: callable
+    ):
+        """
+        Constructor.
+        :param index: index within the dataframe. Any type
+        :param value: the candles bar close value in this position
+        :param threshold: precision threshold to compare the boundaries for
+        winning, losing or doing nothing.
+        :param wins_on_buying: function to check whether it wins on buying
+        :param loses_on_buying: function to check whether it loses on buying
+        :param wins_on_selling: function to check whether it wins on selling
+        :param loses_on_selling: function to check whether it loses on selling
+        """
+        self.__index = index
+        self.__value = value
+        self.__threshold = threshold
+        self.__wins_on_buying = wins_on_buying
+        self.__loses_on_buying = loses_on_buying
+        self.__wins_on_selling = wins_on_selling
+        self.__loses_on_selling = loses_on_selling
 
+    @property
+    def index(self):
+        return self.__index
 
-def __set_earnings(high, low, tp, sl, earn_buying, earn_selling, open_buying, open_selling):
-    earn_buying = __update(low, high, tp, sl, earn_buying, open_buying, __evaluate_buying)
-    earn_selling = __update(low, high, tp, sl, earn_selling, open_selling, __evaluate_selling)
-    return earn_buying, earn_selling
+    def evaluate_buying(
+            self,
+            low: np.float32,
+            high: np.float32,
+            take_profit: np.float32,
+            stop_loss: np.float32
+    ) -> Evaluation:
+        """
+        Evaluate whether the position closes on buying operation.
+        :param low: candle bars low value
+        :param high: candle bars high value
+        :param take_profit: value set as profit boundary
+        :param stop_loss:  value set as loss boundary
+        :return: Return an Evaluation value describing whether buying loses or
+        wins.
+        """
+        if self.__wins_on_buying(high, take_profit, self.__value, self.__threshold):
+            return Evaluation.WINS
+        if self.__loses_on_buying(low, stop_loss, self.__value, self.__threshold):
+            return Evaluation.LOSES
+        return Evaluation.NONE
 
-
-def __collect(index, close, create_position: callable, open_buying, open_selling):
-    position: Position = create_position(index, close)
-    open_buying.add(position)
-    open_selling.add(position)
-
-
-def __update(
-        low,
-        high,
-        take_profit,
-        stop_loss,
-        data: np.ndarray,
-        open_positions: set,
-        evaluate: callable):
-    remaining_positions = set()
-    while len(open_positions):
-        position: Position = open_positions.pop()
-        overcome = evaluate(position, low, high, take_profit, stop_loss)
-        if Evaluation.WINS == overcome:
-            data[position.index] = take_profit
-        elif Evaluation.LOSES == overcome:
-            data[position.index] = stop_loss * (-1)
-        else:
-            remaining_positions.add(position)
-    open_positions.update(remaining_positions)
-    return data
-
-
-def __evaluate_buying(position, low, high, tp, sl):
-    return position.evaluate_buying(low, high, tp, sl)
-
-
-def __evaluate_selling(position, low, high, tp, sl):
-    return position.evaluate_selling(low, high, tp, sl)
+    def evaluate_selling(
+            self,
+            low: np.float32,
+            high: np.float32,
+            take_profit: np.float32,
+            stop_loss: np.float32
+    ) -> Evaluation:
+        """
+        Evaluate whether the position closes on selling operation.
+        :param low: candle bars low value
+        :param high: candle bars high value
+        :param take_profit: value set as profit boundary
+        :param stop_loss:  value set as loss boundary
+        :return: Return an Evaluation value describing whether selling loses or
+        wins.
+        """
+        if self.__wins_on_selling(low, take_profit, self.__value, self.__threshold):
+            return Evaluation.WINS
+        if self.__loses_on_selling(high, stop_loss, self.__value, self.__threshold):
+            return Evaluation.LOSES
+        return Evaluation.NONE
