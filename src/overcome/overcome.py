@@ -1,9 +1,9 @@
 import numpy as np
-from pandas import DataFrame, Series
+from pandas import DataFrame
 
+from src.overcome.cposition import cposition
 from src.overcome.position.positions import Positions
 from src.overcome.position.factory import Factory
-from src.overcome.position.position import Position
 
 
 class Overcome:
@@ -52,33 +52,20 @@ class Overcome:
         take profit, stop loss and values in the row as close, high and low.
 
         First we convert the targeted columns into numpy arrays. We process the
-        comparisons and changes over these arrays, and then we merge them into
-        the original dataframe as new columns.
+        comparisons and changes over these arrays in an improved service,
+        and then we merge them into the original dataframe as new columns.
 
         :param to: input dataframe
         :return: the new columns in addition to the input dataframe
         """
         self.__earn_buying = np.zeros([len(to), 1], dtype=np.float32)
         self.__earn_selling = np.zeros([len(to), 1], dtype=np.float32)
-        market_values = to[["high", "low", "close"]].to_numpy(dtype=np.float32)
-        market_values_iterator = np.nditer(
-            market_values,
-            order='C',
-            flags=['external_loop'])
-        for index, row in enumerate(market_values_iterator):
-            self.__set_earnings(row[0], row[1])
-            self.__collect(index, row[2])
-        to["earn_buying"] = self.__earn_buying
-        to["earn_selling"] = self.__earn_selling
+        high_low_close = to[["high", "low", "close"]].to_numpy(dtype=np.float32)
+        (to["earn_buying"], to["earn_selling"]) = \
+            cposition.calculate_earnings(
+                high_low_close,
+                self.__tp,
+                self.__sl,
+                self.__position_factory.create)
         return to
 
-    def __collect(self, index, close):
-        position: Position = self.__position_factory.create(index, close)
-        self.__buying.insert(position)
-        self.__selling.insert(position)
-
-    def __set_earnings(self, high, low):
-        self.__earn_buying = self.__buying.update(
-            low, high, self.__tp, self.__sl, self.__earn_buying)
-        self.__earn_selling = self.__selling.update(
-            low, high, self.__tp, self.__sl, self.__earn_selling)
