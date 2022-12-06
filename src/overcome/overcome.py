@@ -1,7 +1,7 @@
 import numpy as np
 from pandas import DataFrame
 
-from src.overcome.cposition import cpositionlib
+import cpositionlib
 from src.overcome.position.factory import Factory
 
 
