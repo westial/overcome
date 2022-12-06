@@ -4,8 +4,8 @@ approach to get the buying and selling earnings overcome.
 """
 import numpy as np
 
-from src.overcome.cposition.cposition import CPosition
-from src.overcome.cposition.evaluation import Evaluation
+from src.overcome.position.position import Position
+from src.overcome.position.evaluation import Evaluation
 
 
 def calculate_earnings(
@@ -42,7 +42,7 @@ def __set_earnings(high, low, tp, sl, earn_buying, earn_selling, open_buying, op
 
 
 def __collect(index, close, create_position: callable, open_buying, open_selling):
-    position: CPosition = create_position(index, close)
+    position: Position = create_position(index, close)
     open_buying.add(position)
     open_selling.add(position)
 
@@ -57,7 +57,7 @@ def __update(
         evaluate: callable):
     remaining_positions = set()
     while len(open_positions):
-        position: CPosition = open_positions.pop()
+        position: Position = open_positions.pop()
         overcome = evaluate(position, low, high, take_profit, stop_loss)
         if Evaluation.WINS == overcome:
             data[position.index] = take_profit

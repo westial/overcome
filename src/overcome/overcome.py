@@ -2,7 +2,7 @@ import numpy as np
 from pandas import DataFrame
 
 import cpositionlib
-from src.overcome.cposition.factory import Factory
+from src.overcome.position.factory import Factory
 
 
 class Overcome:

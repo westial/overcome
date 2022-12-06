@@ -1,7 +1,7 @@
 import numpy as np
 
-from src.overcome.cposition.cposition import CPosition
-from src.overcome.cposition.factory import Factory
+from src.overcome.position.position import Position
+from src.overcome.position.factory import Factory
 
 
 def _wins_on_buying(high: np.float32, take_profit: np.float32,
@@ -25,12 +25,12 @@ def _loses_on_selling(high: np.float32, stop_loss: np.float32, value: np.float32
     return np.isclose(high, limit, threshold) or high > limit
 
 
-class CPreciseFactory(Factory):
+class PreciseFactory(Factory):
     def __init__(self, precision_threshold: np.float32):
         self.__threshold = precision_threshold
 
     def create(self, index, value: np.float32):
-        return CPosition(
+        return Position(
             index,
             value,
             self.__threshold,

@@ -1,7 +1,7 @@
 from Cython.Build import cythonize
 from setuptools import setup, Extension
 
-cpositionlib = Extension("cpositionlib", sources=["src/overcome/cposition/cpositionlib.pyx"])
+cpositionlib = Extension("cpositionlib", sources=["src/overcome/position/cpositionlib.pyx"])
 
 setup(
     name='overcome',

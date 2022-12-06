@@ -1,9 +1,9 @@
 import numpy as np
 
-from src.overcome.cposition.evaluation import Evaluation
+from src.overcome.position.evaluation import Evaluation
 
 
-class CPosition:
+class Position:
     def __init__(
             self,
             index,
