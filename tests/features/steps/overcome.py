@@ -7,9 +7,6 @@ from pandas import DataFrame
 from src.overcome.cposition.cprecisefactory import CPreciseFactory
 from src.overcome.cposition.cposition import CPosition
 from src.overcome.overcome import Overcome
-from src.overcome.position.buying import Buying
-from src.overcome.position.factory import Factory
-from src.overcome.position.selling import Selling
 
 
 @given("any data frame with a few rows")

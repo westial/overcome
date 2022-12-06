@@ -1,7 +1,7 @@
 import numpy as np
 
 from src.overcome.cposition.cposition import CPosition
-from src.overcome.position.factory import Factory
+from src.overcome.cposition.factory import Factory
 
 
 def _wins_on_buying(high: np.float32, take_profit: np.float32,

@@ -5,7 +5,6 @@ import pandas as pd
 
 from src.overcome.cposition.cprecisefactory import CPreciseFactory
 from src.overcome.overcome import Overcome
-from src.overcome.position.precisefactory import PreciseFactory
 
 
 class TestOvercome(TestCase):
@@ -33,7 +32,7 @@ class TestOvercome(TestCase):
         NOTE Test spends 1 min 18 sec
         """
         df = pd.read_parquet("../samples/live15m.parquet").sort_index()
-        position_factory = PreciseFactory(precision_threshold=0.00001)
+        position_factory = CPreciseFactory(precision_threshold=np.float32(0.00001))
         overcome = Overcome(
             position_factory,
             np.float32(0.005),
