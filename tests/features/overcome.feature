@@ -5,11 +5,6 @@ Feature: Overcome data addition
     And a position precision threshold of 0.00001
     And a stop loss configuration as 0.0010
 
-  Scenario: It starts a buying and a selling positions on every row
-    Given any data frame with a few rows
-    When I apply the overcome to the data frame
-    Then there is a buying and selling position pointing to every row
-
   Scenario: It initializes earnings columns for buying and selling at 0 by default
     Given any data frame with one row only
     When I apply the overcome to the data frame

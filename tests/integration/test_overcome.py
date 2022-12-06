@@ -3,7 +3,6 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 
-from src.overcome.position.cprecisefactory import PreciseFactory
 from src.overcome.overcome import Overcome
 
 
@@ -19,9 +18,7 @@ class TestOvercome(TestCase):
             parse_dates=True,
             names=['date', 'open', 'high', 'low', 'close', 'volume']
         ).sort_index()
-        position_factory = PreciseFactory(precision_threshold=np.float32(0.00001))
         overcome = Overcome(
-            position_factory,
             np.float32(0.001),
             np.float32(0.001))
         result = overcome.apply(df)
@@ -32,9 +29,7 @@ class TestOvercome(TestCase):
         NOTE Test spends 1 min 18 sec
         """
         df = pd.read_parquet("../samples/live15m.parquet").sort_index()
-        position_factory = PreciseFactory(precision_threshold=np.float32(0.00001))
         overcome = Overcome(
-            position_factory,
             np.float32(0.005),
             np.float32(0.0005))
         overcome.apply(df[:10000])

@@ -4,8 +4,6 @@ import numpy as np
 from behave import *
 from pandas import DataFrame
 
-from src.overcome.position.precisefactory import PreciseFactory
-from src.overcome.position.position import Position
 from src.overcome.overcome import Overcome
 
 
@@ -22,30 +20,11 @@ def step_impl(context):
 
 @when("I apply the overcome to the data frame")
 def step_impl(context):
-    position_factory = PreciseFactory(context.position_threshold)
-    position_factory.create = Mock(side_effect=position_factory.create)
     overcome = Overcome(
-        position_factory,
         context.take_profit,
         context.stop_loss)
     context.result = overcome.apply(context.df)
     context.overcome = overcome
-    context.position_factory = position_factory
-
-
-@then("there is a buying and selling position pointing to every row")
-def step_impl(context):
-    calls = []
-    for index in range(0, len(context.df) - 1):
-        call_ = call(index, context.df.iloc[index]["close"])
-        calls.append(call_)
-    context.position_factory.create.assert_has_calls(calls)
-
-
-@step("there is a selling position pointing to every row")
-def step_impl(context):
-    for index in context.df.index:
-        assert isinstance(context.overcome.get_sell_position(index), Position)
 
 
 @given("any data frame with one row only")
@@ -154,9 +133,7 @@ def step_impl(context):
 
 @when("I apply the real overcome to the data frame")
 def step_impl(context):
-    position_factory = PreciseFactory(context.position_threshold)
     overcome = Overcome(
-        position_factory,
         context.take_profit,
         context.stop_loss)
     context.result = overcome.apply(context.df)

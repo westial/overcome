@@ -1,8 +1,7 @@
 import numpy as np
 from pandas import DataFrame
 
-import cpositionlib
-from src.overcome.position.factory import Factory
+from src.overcome.position import cpositionlib
 
 
 class Overcome:
@@ -29,12 +28,10 @@ class Overcome:
     """
     def __init__(
             self,
-            position_factory: Factory,
             take_profit: np.float32,
             stop_loss: np.float32
 
     ):
-        self.__position_factory = position_factory
         self.__tp = take_profit
         self.__sl = stop_loss
         self.__earn_buying = None
@@ -60,7 +57,6 @@ class Overcome:
             cpositionlib.calculate_earnings(
                 high_low_close,
                 self.__tp,
-                self.__sl,
-                self.__position_factory.create)
+                self.__sl)
         return to
 
