@@ -3,7 +3,7 @@ import random
 import numpy as np
 from behave import *
 
-from src.overcome.position.stack import add, empty, head, tail, after, \
+from src.stack.stack import add, empty, head, tail, after, \
     create, before, shift, pop
 
 THRESHOLD = 0.01
