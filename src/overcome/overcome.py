@@ -1,7 +1,7 @@
 import numpy as np
 from pandas import DataFrame
 
-from src.overcome.position import cpositionlib
+from src.overcome.position import positionlib
 
 
 class Overcome:
@@ -54,7 +54,7 @@ class Overcome:
         self.__earn_selling = np.zeros([len(to), 1], dtype=np.float32)
         high_low_close = to[["high", "low", "close"]].to_numpy(dtype=np.float32)
         (to["earn_buying"], to["earn_selling"]) = \
-            cpositionlib.calculate_earnings(
+            positionlib.calculate_earnings(
                 high_low_close,
                 self.__tp,
                 self.__sl)

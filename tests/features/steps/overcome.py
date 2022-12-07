@@ -21,8 +21,8 @@ def step_impl(context):
 @when("I apply the overcome to the data frame")
 def step_impl(context):
     overcome = Overcome(
-        context.take_profit,
-        context.stop_loss)
+        context._take_profit,
+        context._stop_loss)
     context.result = overcome.apply(context.df)
     context.overcome = overcome
 
@@ -77,13 +77,13 @@ def step_impl(context):
 
 @step("a take profit configuration as {tp}")
 def step_impl(context, tp):
-    context.take_profit = np.float32(tp)
+    context._take_profit = np.float32(tp)
 
 
 @then(
     "the starting position earnings for buying value is equal to the take profit")
 def step_impl(context):
-    assert context.take_profit == context.df["earn_buying"][0]
+    assert context._take_profit == context.df["earn_buying"][0]
 
 
 @step("a position precision threshold of {threshold}")
@@ -99,24 +99,24 @@ def step_impl(context):
 @then(
     "the starting position earnings for selling value is equal to the take profit")
 def step_impl(context):
-    assert context.take_profit == context.df["earn_selling"][0]
+    assert context._take_profit == context.df["earn_selling"][0]
 
 
 @step("a stop loss configuration as {sl}")
 def step_impl(context, sl):
-    context.stop_loss = np.float32(sl)
+    context._stop_loss = np.float32(sl)
 
 
 @then(
     "the starting position earnings for buying value is equal to the negative value of stop loss")
 def step_impl(context):
-    assert context.stop_loss == context.df["earn_buying"][0] * (-1)
+    assert context._stop_loss == context.df["earn_buying"][0] * (-1)
 
 
 @then(
     "the starting position earnings for selling value is equal to the negative value of stop loss")
 def step_impl(context):
-    assert context.stop_loss == context.df["earn_selling"][0] * (-1)
+    assert context._stop_loss == context.df["earn_selling"][0] * (-1)
 
 
 @then("the expected earnings match the results")
@@ -134,8 +134,8 @@ def step_impl(context):
 @when("I apply the real overcome to the data frame")
 def step_impl(context):
     overcome = Overcome(
-        context.take_profit,
-        context.stop_loss)
+        context._take_profit,
+        context._stop_loss)
     context.result = overcome.apply(context.df)
     context.overcome = overcome
 

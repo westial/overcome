@@ -9,7 +9,7 @@ from src.overcome.overcome import Overcome
 class TestOvercome(TestCase):
     def test_it_counteracts_selling_with_buying(self):
         """
-        NOTE Test spends 496ms
+        NOTE Test spends 38ms
         """
         df = pd.read_csv(
             "../samples/few_live1m_histdata.csv",
@@ -26,7 +26,7 @@ class TestOvercome(TestCase):
 
     def test_it_applies_on_a_large_dataframe(self):
         """
-        NOTE Test spends 1 min 18 sec
+        NOTE Test spends 2 sec 700ms
         """
         df = pd.read_parquet("../samples/live15m.parquet").sort_index()
         overcome = Overcome(
