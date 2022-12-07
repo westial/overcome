@@ -8,8 +8,9 @@ import numpy as np
 
 from src.overcome.position.evaluation import Evaluation
 
-POSITION_INDEX = 0
-POSITION_VALUE = 1
+POSITION_VALUE = 0
+POSITION_INDEX = 1
+
 THRESHOLD = np.float32(0.00001)
 
 stop_loss = 0.0
@@ -50,13 +51,15 @@ def calculate_earnings(high_low_close: np.ndarray, take_profit_, stop_loss_):
 
 def __set_earnings(high, low):
     global earn_buying, earn_selling, open_buying, open_selling
-    earn_buying = __update(low, high, earn_buying, open_buying, __evaluate_buying)
-    earn_selling = __update(low, high, earn_selling, open_selling, __evaluate_selling)
+    earn_buying = __update(
+        low, high, earn_buying, open_buying, __evaluate_buying)
+    earn_selling = __update(
+        low, high, earn_selling, open_selling, __evaluate_selling)
 
 
 def __collect(index, close):
     global open_buying, open_selling
-    position: tuple = (index, close)
+    position: tuple = (close, index)
     open_buying.add(position)
     open_selling.add(position)
 
