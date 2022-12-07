@@ -1,5 +1,3 @@
-from unittest.mock import Mock, call
-
 import numpy as np
 from behave import *
 from pandas import DataFrame
@@ -22,7 +20,8 @@ def step_impl(context):
 def step_impl(context):
     overcome = Overcome(
         context._take_profit,
-        context._stop_loss)
+        context._stop_loss,
+        context.position_threshold)
     context.result = overcome.apply(context.df)
     context.overcome = overcome
 
@@ -135,7 +134,9 @@ def step_impl(context):
 def step_impl(context):
     overcome = Overcome(
         context._take_profit,
-        context._stop_loss)
+        context._stop_loss,
+        context.position_threshold
+    )
     context.result = overcome.apply(context.df)
     context.overcome = overcome
 

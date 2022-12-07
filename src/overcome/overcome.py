@@ -29,11 +29,13 @@ class Overcome:
     def __init__(
             self,
             take_profit: np.float32,
-            stop_loss: np.float32
+            stop_loss: np.float32,
+            threshold: np.float32
 
     ):
         self.__tp = take_profit
         self.__sl = stop_loss
+        self.__threshold = threshold
         self.__earn_buying = None
         self.__earn_selling = None
 
@@ -57,6 +59,8 @@ class Overcome:
             positionlib.calculate_earnings(
                 high_low_close,
                 self.__tp,
-                self.__sl)
+                self.__sl,
+                self.__threshold
+            )
         return to
 
