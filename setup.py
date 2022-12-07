@@ -1,7 +1,4 @@
-from Cython.Build import cythonize
-from setuptools import setup, Extension
-
-cpositionlib = Extension("cpositionlib", sources=["src/overcome/position/cpositionlib.pyx"])
+from setuptools import setup
 
 setup(
     name='overcome',
@@ -12,9 +9,5 @@ setup(
     author='Jaume Mila Bea',
     author_email='jaume@westial.com',
     description='Calculate the bid/ask outcome of every row in a dataframe with '
-                'stock exchange candle bars data (OHLCV).',
-    ext_modules=cythonize(
-        [cpositionlib],
-        compiler_directives={'language_level': "3"})
-
+                'stock exchange candle bars data (OHLCV).'
 )

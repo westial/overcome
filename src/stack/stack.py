@@ -14,8 +14,6 @@ def create():
 
 
 def __move_down(previous, from_this, in_stack):
-    if None is from_this:
-        return
     if from_this.after:
         previous.after = from_this.after
         previous.after.before = previous
@@ -30,13 +28,6 @@ def __move_down(previous, from_this, in_stack):
         from_this.before = None
     from_this.after = previous
     previous.before = from_this
-
-
-def __replace(that, by_previous):
-    by_previous.before = that.before
-    that.before.after = by_previous
-    by_previous.after = that
-    that.before = by_previous
 
 
 def __place(previous, from_this, in_stack):
@@ -84,6 +75,8 @@ def __set_head(stack, node):
 
 
 def tail(stack):
+    if not stack[TAIL]:
+        return head(stack)
     return stack[TAIL]
 
 
@@ -113,7 +106,7 @@ def pop(stack):
     node = tail(stack)
     __set_tail(stack, node.before)
     if None is node.before:
-        __set_head(stack, node.before)
+        __set_head(stack, None)
     else:
         node.before.after = None
     return node
