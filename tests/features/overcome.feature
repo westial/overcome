@@ -73,7 +73,7 @@ Feature: Overcome data addition
       | 9     | 1.0010 | 1.0015 | 0.9995 | -0.0007           | 0.0010             | sell 2 wins at 0.0010, sell 3 wins at 0.0010, sell 4 wins at 0.0010, sell 5 wins at 0.0010, sell 6 wins at 0.0010, sell 7 wins at 0.0010, sell 8 wins at 0.0010, buy 2 loses at 0.0007, buy 3 loses at 0.0007, buy 4 loses at 0.0007, buy 5 loses at 0.0007, buy 6 loses at 0.0007, buy 7 loses at 0.0007, buy 8 loses at 0.0007 |
       | 10    | 1.0010 | 1.0015 | 0.9993 | -0.0007           | 0.0010             | buy 0 loses at 0.0007, buy 1 loses at 0.0007, buy 9 loses at 0.0007, sell 9 wins at 0.0010                                                                                                                                                                                                                                       |
       | 11    | 1.0010 | 1.0016 | 0.9990 | 0                 | 0                  | sell 0 wins at 0.0010, sell 1 wins at 0.0010, buy 4 wins at 0.0010, sell 7 loses at 0.0007, buy 10 loses at 0.0007, sell 10 wins at 0.0010                                                                                                                                                                                       |
-    When I apply the real overcome to the data frame
+    When I apply the overcome to the data frame
     Then the expected earnings match the results
 
   Scenario: It keeps the original index

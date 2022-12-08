@@ -19,10 +19,13 @@ def step_impl(context):
 @when("I apply the overcome to the data frame")
 def step_impl(context):
     overcome = Overcome(
-        context._take_profit,
-        context._stop_loss,
-        context.position_threshold)
-    context.result = overcome.apply(context.df)
+            context.position_threshold,
+            context._take_profit,
+            context._stop_loss)
+    context.result = context.df
+    high_low_close = context.df[["high", "low", "close"]].to_numpy(dtype=np.float32)
+    (context.result["earn_buying"], context.result["earn_selling"]) = \
+        overcome.apply(high_low_close)
     context.overcome = overcome
 
 
@@ -128,17 +131,6 @@ def step_impl(context):
         np.sign(np.array(context.df["earn_selling"])),
         np.sign(np.array(context.expected_to_earn_selling))
     )
-
-
-@when("I apply the real overcome to the data frame")
-def step_impl(context):
-    overcome = Overcome(
-        context._take_profit,
-        context._stop_loss,
-        context.position_threshold
-    )
-    context.result = overcome.apply(context.df)
-    context.overcome = overcome
 
 
 @given("a data frame with a few rows with a non-numerical index")

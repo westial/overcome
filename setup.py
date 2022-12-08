@@ -9,5 +9,12 @@ setup(
     author='Jaume Mila Bea',
     author_email='jaume@westial.com',
     description='Calculate the bid/ask outcome of every row in a dataframe with '
-                'stock exchange candle bars data (OHLCV).'
+                'stock exchange candle bars data (OHLCV).',
+    install_requires=['numpy'],
+    extras_require={
+        'dev': [
+            'pandas',
+            'behave'
+        ]
+    }
 )
