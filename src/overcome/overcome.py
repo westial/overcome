@@ -7,7 +7,7 @@ import numpy as np
 
 from src.overcome.position.positions import Positions
 from src.overcome.position.evaluation import Evaluation
-from src.stack.stack import create, add, Node, empty, head, tail, pop, shift
+from src.stack.stack import Node, Stack
 
 POSITION_VALUE = 0
 POSITION_INDEX = 1
@@ -40,20 +40,20 @@ class Overcome:
         self.__threshold = threshold
         self.__tp = take_profit
         self.__sl = stop_loss
-        self.__open_buying = create()
-        self.__open_selling = create()
+        self.__open_buying = Stack()
+        self.__open_selling = Stack()
         self.__evaluation = Evaluation(threshold, take_profit, stop_loss)
         self.__potential_winner = Positions(
-            read_for_win=head,
-            remove_for_win=shift,
-            read_for_lose=tail,
-            remove_for_lose=pop
+            read_for_win=lambda s: s.head(),
+            remove_for_win=lambda s: s.shift(),
+            read_for_lose=lambda s: s.tail(),
+            remove_for_lose=lambda s: s.pop()
         )
         self.__potential_loser = Positions(
-            read_for_win=tail,
-            remove_for_win=pop,
-            read_for_lose=head,
-            remove_for_lose=shift
+            read_for_win=lambda s: s.tail(),
+            remove_for_win=lambda s: s.pop(),
+            read_for_lose=lambda s: s.head(),
+            remove_for_lose=lambda s: s.shift()
         )
 
     def apply(self, high_low_close: np.ndarray):
@@ -91,8 +91,8 @@ class Overcome:
         with values_iter:
             for index, [high, low, close] in enumerate(values_iter):
                 self.__update_earnings(high, low, earn_buying, earn_selling)
-                add(self.__open_buying, index, close)
-                add(self.__open_selling, index, close)
+                self.__open_buying.add(index, close)
+                self.__open_selling.add(index, close)
         return earn_buying, earn_selling
 
     def __update_earnings(
@@ -133,7 +133,7 @@ class Overcome:
             high: np.float32,
             low: np.float32,
             earnings: np.ndarray,
-            open_positions: tuple,
+            open_positions: Stack,
             evaluate: callable,
             positions: Positions
     ):
@@ -161,7 +161,7 @@ class Overcome:
             high: np.float32,
             low: np.float32,
             earnings: np.ndarray,
-            open_positions: tuple,
+            open_positions: Stack,
             evaluate: callable,
             read_for_lose: callable,
             remove_for_lose: callable
@@ -180,7 +180,7 @@ class Overcome:
         it recursively evaluates the following until one evaluates false because
         the following may be equal of the one that evaluated true.
         """
-        if empty(open_positions):
+        if open_positions.empty():
             return
         node: Node = read_for_lose(open_positions)
         if Evaluation.LOSES == evaluate(node.priority, high, low):
@@ -196,7 +196,7 @@ class Overcome:
             high: np.float32,
             low: np.float32,
             earnings: np.ndarray,
-            open_positions: tuple,
+            open_positions: Stack,
             evaluate: callable,
             read_for_win: callable,
             remove_for_win: callable
@@ -215,7 +215,7 @@ class Overcome:
         it recursively evaluates the following until one evaluates false because
         the following may be equal of the one that evaluated true.
         """
-        if empty(open_positions):
+        if open_positions.empty():
             return
         node: Node = read_for_win(open_positions)
         if Evaluation.WINS == evaluate(node.priority, high, low):

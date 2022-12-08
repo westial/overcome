@@ -3,7 +3,7 @@ import random
 import numpy as np
 from behave import *
 
-from src.stack.stack import add, empty, head, tail, after, create, before, shift, pop
+from src.stack.stack import Stack
 
 THRESHOLD = 0.01
 
@@ -21,44 +21,44 @@ def step_impl(context, close, index):
 
 @then("the stack is not empty")
 def step_impl(context):
-    assert not empty(context.stack)
+    assert not context.stack.empty()
 
 
-def __fill_up(stack, with_pairs):
+def __fill_up(stack: Stack, with_pairs):
     for pair in with_pairs:
-        add(stack, pair[POSITION_INDEX], pair[POSITION_CLOSE_VALUE])
+        stack.add(pair[POSITION_INDEX], pair[POSITION_CLOSE_VALUE])
 
 
 @step("I add all pairs to the stack")
 def step_impl(context):
-    stack = create()
+    stack = Stack()
     __fill_up(stack, context.pairs)
     context.stack = stack
 
 
 @then("the stack head close value is {:f}")
 def step_impl(context, expected):
-    assert np.isclose(expected, head(context.stack).priority, THRESHOLD)
+    assert np.isclose(expected, context.stack.head().priority, THRESHOLD)
 
 
 @step("the stack tail close value is {:f}")
 def step_impl(context, expected):
-    assert np.isclose(expected, tail(context.stack).priority, THRESHOLD)
+    assert np.isclose(expected, context.stack.tail().priority, THRESHOLD)
 
 
 @step("the close value after head is {:f}")
 def step_impl(context, expected):
-    assert np.isclose(expected, after(head(context.stack)).priority, THRESHOLD)
+    assert np.isclose(expected, context.stack.head().after.priority, THRESHOLD)
 
 
 @step("the close value before tail is {:f}")
 def step_impl(context, expected):
-    assert np.isclose(expected, before(tail(context.stack)).priority, THRESHOLD)
+    assert np.isclose(expected, context.stack.tail().before.priority, THRESHOLD)
 
 
 @when("I shift the stack")
 def step_impl(context):
-    context.result = shift(context.stack)
+    context.result = context.stack.shift()
 
 
 @then("I get the node with value as {:f}")
@@ -68,17 +68,17 @@ def step_impl(context, expected):
 
 @step("the node with value as {:f} is removed from the head")
 def step_impl(context, expected):
-    assert not np.isclose(expected, head(context.stack).priority, THRESHOLD)
+    assert not np.isclose(expected, context.stack.head().priority, THRESHOLD)
 
 
 @step("the stack is empty")
 def step_impl(context):
-    assert empty(context.stack)
+    assert context.stack.empty()
 
 
 @when("I pop the stack")
 def step_impl(context):
-    context.result = pop(context.stack)
+    context.result = context.stack.pop()
 
 
 @then("I get the tail node with value as {:f}")
@@ -88,7 +88,7 @@ def step_impl(context, expected):
 
 @step("the node with value as {:f} is removed from the tail")
 def step_impl(context, expected):
-    assert not np.isclose(expected, tail(context.stack).priority, THRESHOLD)
+    assert not np.isclose(expected, context.stack.tail().priority, THRESHOLD)
 
 
 def __node_provider_factory(get_first: callable, attr_for_next, stack):
@@ -110,25 +110,16 @@ def __assert_match(nodes: callable, expected_list):
 
 @then('the close values from head to tail are "{raw_list}"')
 def step_impl(context, raw_list: str):
-    provide = __node_provider_factory(head, "after", context.stack)
+    provide = __node_provider_factory(lambda s: s.head(), "after", context.stack)
     expected_list = raw_list.split(",")
     __assert_match(provide, expected_list)
 
 
 @then('the close values from tail to head are "{raw_list}"')
 def step_impl(context, raw_list: str):
-    provide = __node_provider_factory(tail, "before", context.stack)
+    provide = __node_provider_factory(lambda s: s.tail(), "before", context.stack)
     expected_list = raw_list.split(",")
     __assert_match(provide, expected_list)
-
-
-@given("several randomly sorted lists of close values")
-def step_impl(context):
-    """
-    :type context: behave.runner.Context
-    """
-    raise NotImplementedError(
-        u'STEP: Given several randomly sorted lists of close values')
 
 
 @given('several randomly sorted lists of values as "{raw_list}"')
@@ -144,7 +135,7 @@ def step_impl(context, raw_list: str):
 def step_impl(context):
     stacks = []
     for pairs in context.pairs_sets:
-        stack = create()
+        stack = Stack()
         __fill_up(stack, pairs)
         stacks.append(stack)
     context.stacks = stacks
@@ -154,7 +145,7 @@ def step_impl(context):
 def step_impl(context, raw_list: str):
     expected_list = raw_list.split(",")
     for stack in context.stacks:
-        provide = __node_provider_factory(head, "after", stack)
+        provide = __node_provider_factory(lambda s: s.head(), "after", stack)
         __assert_match(provide, expected_list)
 
 
@@ -162,5 +153,5 @@ def step_impl(context, raw_list: str):
 def step_impl(context, raw_list: str):
     expected_list = raw_list.split(",")
     for stack in context.stacks:
-        provide = __node_provider_factory(tail, "before", stack)
+        provide = __node_provider_factory(lambda s: s.tail(), "before", stack)
         __assert_match(provide, expected_list)

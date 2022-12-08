@@ -9,104 +9,94 @@ class Node:
     content = None
 
 
-def create():
-    return [None, None]
+class Stack:
+    def __init__(self):
+        self.__edges = [None, None]
 
+    def __move_down(self, previous, from_this):
+        if from_this.after:
+            previous.after = from_this.after
+            previous.after.before = previous
+        else:
+            self.__set_tail(previous)
+            previous.after = None
+        if previous.before:
+            from_this.before = previous.before
+            from_this.before.after = from_this
+        else:
+            self.__set_head(from_this)
+            from_this.before = None
+        from_this.after = previous
+        previous.before = from_this
 
-def __move_down(previous, from_this, in_stack):
-    if from_this.after:
-        previous.after = from_this.after
-        previous.after.before = previous
-    else:
-        __set_tail(in_stack, previous)
-        previous.after = None
-    if previous.before:
-        from_this.before = previous.before
-        from_this.before.after = from_this
-    else:
-        __set_head(in_stack, from_this)
-        from_this.before = None
-    from_this.after = previous
-    previous.before = from_this
+    def __place(self, previous, from_this):
+        if None is from_this:
+            return
+        if from_this.priority < previous.priority:
+            self.__move_down(previous, from_this)
+            self.__place(previous, previous.after)
 
+    @staticmethod
+    def __create_node(content, priority):
+        node = Node()
+        node.priority = priority
+        node.content = content
+        return node
 
-def __place(previous, from_this, in_stack):
-    if None is from_this:
-        return
-    if from_this.priority < previous.priority:
-        __move_down(previous, from_this, in_stack)
-        __place(previous, previous.after, in_stack)
+    def add(self, content, priority):
+        node = self.__create_node(content, priority)
+        if self.empty():
+            self.__set_head(node)
+            self.__set_tail(node)
+        else:
+            self.__push(node)
+            self.__place(node, node.after)
 
+    def empty(self):
+        return None is self.__edges[HEAD]
 
-def __create_node(content, priority):
-    node = Node()
-    node.priority = priority
-    node.content = content
-    return node
+    def head(self):
+        return self.__edges[HEAD]
 
+    def __push(self, node):
+        last = self.head()
+        last.before = node
+        node.after = last
+        self.__set_head(node)
 
-def add(stack, content, priority):
-    node = __create_node(content, priority)
-    if empty(stack):
-        __set_head(stack, node)
-        __set_tail(stack, node)
-    else:
-        __push(stack, node)
-        __place(node, node.after, stack)
+    def __set_head(self, node):
+        self.__edges[HEAD] = node
 
+    def tail(self):
+        if not self.__edges[TAIL]:
+            return self.head()
+        return self.__edges[TAIL]
 
-def empty(stack):
-    return None is stack[HEAD]
+    def __set_tail(self, node):
+        self.__edges[TAIL] = node
 
+    @staticmethod
+    def after(node):
+        return node.after
 
-def head(stack):
-    return stack[HEAD]
+    @staticmethod
+    def before(node):
+        return node.before
 
+    def shift(self):
+        node = self.head()
+        self.__set_head(node.after)
+        if None is node.after:
+            self.__set_tail(None)
+        else:
+            node.after.before = None
+        return node
 
-def __push(stack, node):
-    last = head(stack)
-    last.before = node
-    node.after = last
-    __set_head(stack, node)
-
-
-def __set_head(stack, node):
-    stack[HEAD] = node
-
-
-def tail(stack):
-    if not stack[TAIL]:
-        return head(stack)
-    return stack[TAIL]
-
-
-def __set_tail(stack, node):
-    stack[TAIL] = node
-
-
-def after(node):
-    return node.after
-
-
-def before(node):
-    return node.before
-
-
-def shift(stack):
-    node = head(stack)
-    __set_head(stack, node.after)
-    if None is node.after:
-        __set_tail(stack, None)
-    else:
-        node.after.before = None
-    return node
-
-
-def pop(stack):
-    node = tail(stack)
-    __set_tail(stack, node.before)
-    if None is node.before:
-        __set_head(stack, None)
-    else:
-        node.before.after = None
-    return node
+    def pop(self):
+        node = self.tail()
+        self.__set_tail(node.before)
+        if None is node.before:
+            self.__set_head(None)
+        else:
+            node.before.after = None
+        return node
