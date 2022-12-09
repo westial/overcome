@@ -1,5 +1,4 @@
 """
-Facade of the position package.
 High performance approach to get the buying and selling earnings overcome.
 """
 
@@ -15,24 +14,10 @@ POSITION_INDEX = 1
 
 class Overcome:
     """
-    This service calculates the bid/ask outcome of every row in an input
-    with the columns high, low and close values from stock exchange candle bars
-    historical data.
-
-    The input is expected to contain an already sorted historical results of
-    a product of the stocks exchange market.
-
-    Applying the overcome simulates to open a position on buying and a position
-    on selling on every row in the input. Then it follows up all rows
-    in the timeline, and it attempts to close every simulated position based on
-    the stop loss and take profit predefined values.
-
-    If the evaluation finds out that the row reaches the take profit then one of
-    the new columns will keep exactly the take profit value. Otherwise, if the
-    row reaches the stop loss the column will keep the stop loss value.
-
-    The result tuple are an array with the buying and one for the selling
-    earnings on every row.
+    Given a constant take profit and a stop loss, and a time base sorted data
+    vector with the "high", "low", and "close" values from a stock market
+    product, Overcome calculates the potential earnings in both, buying and
+    selling for every step in the timeline.
 
     The precision used overall project is np.float32.
     """
@@ -58,7 +43,7 @@ class Overcome:
 
     def apply(self, high_low_close: np.ndarray):
         """
-        Given a numpy array with a shape of (1, 3), with subarray for high,
+        Given a numpy array with a shape of (length, 3), with subarray for high,
         low and close values from a historical stock exchange data set,
         calculates the overcome and returns a tuple with the values of
         the potential earnings for buying positions at left and for selling

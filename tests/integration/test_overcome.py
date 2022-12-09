@@ -1,3 +1,4 @@
+import unittest
 from unittest import TestCase
 
 import numpy as np
@@ -23,6 +24,7 @@ class TestOvercome(TestCase):
         high_low_close = df[["high", "low", "close"]].to_numpy(dtype=np.float32)
         (df["earn_buying"], df["earn_selling"]) = overcome.apply(high_low_close)
         assert df["earn_buying"].sum() == df["earn_selling"].sum() * (-1)
+        print(df.head(30))
 
     def test_it_applies_on_a_large_dataframe(self):
         df = pd.read_parquet("../samples/live15m.parquet").sort_index()
@@ -35,3 +37,7 @@ class TestOvercome(TestCase):
         high_low_close = df_part[["high", "low", "close"]].to_numpy(dtype=np.float32)
         (df_part["earn_buying"], df_part["earn_selling"]) = overcome.apply(high_low_close)
         assert True
+
+
+if __name__ == '__main__':
+    unittest.main()
