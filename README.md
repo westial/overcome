@@ -87,6 +87,13 @@ of this project.
 If you are not only a user of this library but a developer who wants to adapt or
 maintain this code, you should follow the same way, BDD.
 
+Execute the command above to install the extra requirements to start developing 
+on this library.
+
+```
+pip install -e ".[dev]"
+```
+
 Execute the tests by the following command:
 
 ```
