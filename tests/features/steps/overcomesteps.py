@@ -2,7 +2,7 @@ import numpy as np
 from behave import *
 from pandas import DataFrame
 
-from src.overcome.overcome import Overcome
+from overcome.overcome import Overcome
 
 
 @given("any data frame with a few rows")

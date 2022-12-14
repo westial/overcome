@@ -4,9 +4,9 @@ High performance approach to get the buying and selling earnings overcome.
 
 import numpy as np
 
-from src.overcome.position.positions import Positions
-from src.overcome.position.evaluation import Evaluation
-from src.stack.stack import Node, Stack
+from overcome.position.positions import Positions
+from overcome.position.evaluation import Evaluation
+from overcome.stack import Node, Stack
 
 POSITION_VALUE = 0
 POSITION_INDEX = 1
