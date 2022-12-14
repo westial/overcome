@@ -76,39 +76,34 @@ The configuration for take profit for this example is 0.001 and the stop loss is
 |2022-04-01 00:11:00|1.001|1.0015|0.9993|-0.0007|0.001|
 |2022-04-01 00:12:00|1.001|1.0016|0.999|0.0|0.0|
 
-## Test ## 
+## Test and development ## 
 
-Tests are an important part in this project. My developing methodology is BDD
-and I developed this whole project from [tests/features](tests/features).
+This project is based on BDD development. Any change starts here [tests/features](tests/features).
 
-There you can find the most specific documentation about any service or entity
-of this project.
+Moreover, you can find the most specific documentation about any module and
+package of this project.
 
-If you are not only a user of this library but a developer who wants to adapt or
-maintain this code, you should follow the same way, BDD.
-
-Execute the command above to install the extra requirements to start developing 
-on this library.
+Tests require [behave](https://behave.readthedocs.io/) and [pandas](https://pandas.pydata.org/).
+Execute the command below from the source code root directory to install the 
+extra requirements to start developing on this project.
 
 ```
 pip install -e ".[dev]"
 ```
 
-Execute the tests by the following command:
+PYTHONPATH must contain the main source directory [./src](./src) to execute the 
+tests. Use the fantastic  command as 
+follows.
 
 ```
-behave tests/features
+PYTHONPATH=./src behave tests/features
 ```
 
 There are a few integration tests as well. Execute as follows.
 
 ```
-cd tests/integration
-PYTHONPATH=../../ python test_overcome.py
+PYTHONPATH=./src python tests/integration/test_overcome.py
 ```
-
-Remove the path addition `PYTHONPATH=../../` once the package is already 
-installed.
 
 ## Author ##
 

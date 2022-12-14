@@ -4,13 +4,13 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 
-from src.overcome.overcome import Overcome
+from overcome.overcome import Overcome
 
 
 class TestOvercome(TestCase):
     def test_it_counteracts_selling_with_buying(self):
         df = pd.read_csv(
-            "../samples/few_live1m_histdata.csv",
+            "tests/samples/few_live1m_histdata.csv",
             sep=";",
             index_col=0,
             parse_dates=True,
@@ -27,7 +27,7 @@ class TestOvercome(TestCase):
         print(df.head(30))
 
     def test_it_applies_on_a_large_dataframe(self):
-        df = pd.read_parquet("../samples/live15m.parquet").sort_index()
+        df = pd.read_parquet("tests/samples/live15m.parquet").sort_index()
         overcome = Overcome(
                 np.float32(0.00001),
                 np.float32(0.001),
