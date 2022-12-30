@@ -21,7 +21,9 @@ def step_impl(context):
     overcome = Overcome(
             context.position_threshold,
             context._take_profit,
-            context._stop_loss)
+            context._stop_loss,
+            context.buying_limit if "buying_limit" in context else -1
+    )
     context.result = context.df
     high_low_close = context.df[["high", "low", "close"]].to_numpy(dtype=np.float32)
     (context.result["earn_buying"], context.result["earn_selling"]) = \
@@ -148,3 +150,8 @@ def step_impl(context):
 @then("the result dataframe index is the same as the input dataframe")
 def step_impl(context):
     assert 0 == len(context.original_index.difference(context.result.index))
+
+
+@step("a limit at {:d} positions")
+def step_impl(context, count):
+    context.buying_limit = int(count)

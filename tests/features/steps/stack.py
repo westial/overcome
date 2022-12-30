@@ -155,3 +155,8 @@ def step_impl(context, raw_list: str):
     for stack in context.stacks:
         provide = __node_provider_factory(lambda s: s.tail(), "before", stack)
         __assert_match(provide, expected_list)
+
+
+@then("the stack size is {:d}")
+def step_impl(context, expected_size):
+    assert int(expected_size) == len(context.stack)

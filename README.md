@@ -34,6 +34,28 @@ It returns a tuple of two arrays with the same number of items than the input,
 indeed matching the same timeline. The first array is for the earnings from 
 buying positions and the second one for the selling ones.
 
+#### Opened positions limit ####
+
+Opening all positions without limiting their number may be pretty risky. 
+Overcome simulation supports to set a predefined positions number limit in each
+direction, buying and selling. So, for example, if the positions limit is set to
+10, when the first 10 positions will be opened in the simulated overcome, the
+following ones won't open, and then they are not accountable for profit or loss.
+
+Creating an Overcome instance with opened positions limited at 10 for buying and 
+10 for selling is as follows.
+
+```
+overcome = Overcome(
+        threshold=np.float32(0.00001),
+        take_profit=np.float32(0.001),
+        stop_loss=np.float32(0.001),
+        positions_limit=10
+    )
+```
+
+
+
 ### Input from a dataframe ###
 
 Starting with a Dataframe as `df` from any product historical data, convert the 

@@ -12,6 +12,10 @@ class Node:
 class Stack:
     def __init__(self):
         self.__edges = [None, None]
+        self.__length = 0
+
+    def __len__(self):
+        return self.__length
 
     def __move_down(self, previous, from_this):
         if from_this.after:
@@ -51,6 +55,7 @@ class Stack:
         else:
             self.__push(node)
             self.__place(node, node.after)
+        self.__length += 1
 
     def empty(self):
         return None is self.__edges[HEAD]
@@ -90,6 +95,7 @@ class Stack:
             self.__set_tail(None)
         else:
             node.after.before = None
+        self.__length -= 1
         return node
 
     def pop(self):
@@ -99,4 +105,5 @@ class Stack:
             self.__set_head(None)
         else:
             node.before.after = None
+        self.__length -= 1
         return node
