@@ -22,7 +22,8 @@ class Overcome:
     Optionally you can set a positions number limit. When there is
     already this number of opened positions, the following
     positions are not virtually opened. So, these following positions does not
-    win or lose any amount of money.
+    win or lose any amount of money. The limit is -1 by default, then there is
+    no limit.
 
     The precision used overall project is np.float32.
     """
