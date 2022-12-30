@@ -19,9 +19,15 @@ class Overcome:
     product, Overcome calculates the potential earnings in both, buying and
     selling for every step in the timeline.
 
+    Optionally you can set a positions number limit. When there is
+    already this number of opened positions, the following
+    positions are not virtually opened. So, these following positions does not
+    win or lose any amount of money.
+
     The precision used overall project is np.float32.
     """
-    def __init__(self, threshold, take_profit, stop_loss):
+
+    def __init__(self, threshold, take_profit, stop_loss, positions_limit=-1):
         self.__threshold = threshold
         self.__tp = take_profit
         self.__sl = stop_loss
@@ -40,6 +46,7 @@ class Overcome:
             read_for_lose=lambda s: s.head(),
             remove_for_lose=lambda s: s.shift()
         )
+        self.__add_position = self.__choose_adding_method(positions_limit)
 
     def apply(self, high_low_close: np.ndarray):
         """
@@ -76,9 +83,22 @@ class Overcome:
         with values_iter:
             for index, [high, low, close] in enumerate(values_iter):
                 self.__update_earnings(high, low, earn_buying, earn_selling)
-                self.__open_buying.add(index, close)
-                self.__open_selling.add(index, close)
+                self.__add_position(index, close, self.__open_buying)
+                self.__add_position(index, close, self.__open_selling)
         return earn_buying, earn_selling
+
+    @staticmethod
+    def __choose_adding_method(limit: int) -> callable:
+        def add_position_limited(index, value, to: Stack):
+            if limit > len(to):
+                to.add(index, value)
+
+        def add_position_unlimited(index, value, to: Stack):
+            to.add(index, value)
+
+        if 0 > limit:
+            return add_position_unlimited
+        return add_position_limited
 
     def __update_earnings(
             self,

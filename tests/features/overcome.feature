@@ -81,3 +81,27 @@ Feature: Overcome data addition
     When I apply the overcome to the data frame
     Then the result dataframe index is the same as the input dataframe
 
+  Scenario: It limits to open up new buying positions
+    Given a take profit configuration as 0.0010
+    And a stop loss configuration as 0.0007
+    And a limit at 1 positions
+    And a data frame with the following rows
+      | index | close  | high   | low    | expected_buy_earn | expected_sell_earn | comment                                                                                              |
+      | 0     | 1.0000 | 1.0000 | 1.0000 | 0.0010            | -0.0007            | starting                                                                                             |
+      | 1     | 1.0000 | 1.0000 | 1.0000 | 0                 | 0                  |                                                                                                      |
+      | 2     | 1.0000 | 1.0010 | 1.0000 | 0                 | 0                  | buy 0 wins, buy 1 does not win due to the limit, sell 0 loses, sell 1 does not lose due to the limit |
+    When I apply the overcome to the data frame
+    Then the expected earnings match the results
+
+  Scenario: It limits to open up new selling positions
+    Given a take profit configuration as 0.0010
+    And a stop loss configuration as 0.0007
+    And a limit at 1 positions
+    And a data frame with the following rows
+      | index | close  | high   | low    | expected_buy_earn | expected_sell_earn | comment                                                                                              |
+      | 0     | 1.0000 | 1.0000 | 1.0000 | -0.0007           | 0.0010             | starting                                                                                             |
+      | 1     | 1.0000 | 1.0000 | 1.0000 | 0                 | 0                  |                                                                                                      |
+      | 2     | 1.0000 | 1.0000 | 0.9990 | 0                 | 0                  | sell 0 wins, sell 1 does not win due to the limit, buy 0 loses, buy 1 does not lose due to the limit |
+    When I apply the overcome to the data frame
+    Then the expected earnings match the results
+
