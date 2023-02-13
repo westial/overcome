@@ -8,12 +8,12 @@ the timeline.
 
 ## Usage ##
 
-Instantiate the Overcome with the constant value for take profit and stop loss. 
+Instantiate Overcome with the constant value for take profit and stop loss. 
 A value for the precision threshold is required as well. The precision threshold
 applies on whether a "close" value is close to the take profit or stop loss 
 boundaries.
 ```
-overcome = Overcome(
+outcome = Overcome(
         threshold=np.float32(0.00001),
         take_profit=np.float32(0.001),
         stop_loss=np.float32(0.001)
@@ -27,7 +27,7 @@ The order of the 3 columns is very strict. The first one is for the "high"
 values, the second one for the "low" values and the third one for "close" values.
 
 ```
-earn_buying, earn_selling = overcome.apply(high_low_close)
+earn_buying, earn_selling = outcome.apply(high_low_close)
 ```
 
 It returns a tuple of two arrays with the same number of items than the input,
@@ -37,16 +37,16 @@ buying positions and the second one for the selling ones.
 #### Opened positions limit ####
 
 Opening all positions without limiting their number may be pretty risky. 
-Overcome simulation supports to set a predefined positions number limit in each
+Overcome Simulation supports to set a predefined positions number limit in each
 direction, buying and selling. So, for example, if the positions limit is set to
-10, when the first 10 positions will be opened in the simulated overcome, the
+10, when the first 10 positions will be opened in the simulated outcome, the
 following ones won't open, and then they are not accountable for profit or loss.
 
 Creating an Overcome instance with opened positions limited at 10 for buying and 
 10 for selling is as follows.
 
 ```
-overcome = Overcome(
+outcome = Overcome(
         threshold=np.float32(0.00001),
         take_profit=np.float32(0.001),
         stop_loss=np.float32(0.001),
@@ -69,7 +69,7 @@ Then apply the calculation and merge the result into the original Dataframe as
 follows.
 
 ```
-(df["earn_buying"], df["earn_selling"]) = overcome.apply(high_low_close)
+(df["earn_buying"], df["earn_selling"]) = outcome.apply(high_low_close)
 ```
 
 ## Example ##
