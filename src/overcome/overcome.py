@@ -38,8 +38,8 @@ class Overcome:
             positions_limit=-1,
             has_counters=False
     ):
-        self.__open_buying_lengths = pd.Series(dtype=np.int64)
-        self.__open_selling_lengths = pd.Series(dtype=np.int64)
+        self.__open_buying_lengths = pd.Series(dtype=np.int16)
+        self.__open_selling_lengths = pd.Series(dtype=np.int16)
         self.__threshold = threshold
         self.__tp = take_profit
         self.__sl = stop_loss
@@ -108,10 +108,8 @@ class Overcome:
         """
         earn_buying = np.zeros([len(high_low_close), ], dtype=np.float32)
         earn_selling = np.zeros([len(high_low_close), ], dtype=np.float32)
-        buying_lengths = pd.Series(
-            np.zeros([len(high_low_close), ], dtype=np.int64))
-        selling_lengths = pd.Series(
-            np.zeros([len(high_low_close), ], dtype=np.int64))
+        buying_lengths = pd.Series(dtype=np.int16)
+        selling_lengths = pd.Series(dtype=np.int16)
         values_iter = np.nditer(
             high_low_close,
             order='C',
@@ -130,10 +128,24 @@ class Overcome:
                 self.__add_position(index, close, self.__open_buying)
                 self.__add_position(index, close, self.__open_selling)
         if self.__has_counters:
-            buying_lengths.update(self.__open_buying_lengths)
-            selling_lengths.update(self.__open_selling_lengths)
-        return (earn_buying, earn_selling, buying_lengths, selling_lengths) \
-            if self.__has_counters else (earn_buying, earn_selling)
+            return (
+                earn_buying,
+                earn_selling,
+                self.__normalize(buying_lengths, earn_buying),
+                self.__normalize(selling_lengths, earn_selling)
+            )
+        return earn_buying, earn_selling
+
+    @staticmethod
+    def __normalize(values: pd.Series, according_to: np.ndarray) -> np.ndarray:
+        """
+        Take a Series instance, reindex according to the given array and return
+        an array with the new index and the Series' values.
+        """
+        return values.reindex(
+            list(range(0, len(according_to))),
+            fill_value=0
+        ).to_numpy()
 
     @staticmethod
     def __create_adding(limit: int) -> callable:
@@ -255,7 +267,7 @@ class Overcome:
 
     def __copy_from(self, positions: MeasuredStack, to_lengths: pd.Series, at_index):
         if not positions.empty() and self.__has_counters:
-            to_lengths[at_index] = positions.length_of(at_index) + 1
+            to_lengths.loc[at_index] = positions.length_of(at_index) + 1
 
     def __update_for_win(
             self,

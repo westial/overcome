@@ -19,10 +19,11 @@ class TestOvercome(TestCase):
         overcome = Overcome(
                 np.float32(0.00001),
                 np.float32(0.001),
-                np.float32(0.001)
+                np.float32(0.001),
+                has_counters=True
             )
         high_low_close = df[["high", "low", "close"]].to_numpy(dtype=np.float32)
-        (df["earn_buying"], df["earn_selling"]) = overcome.apply(high_low_close)
+        (df["earn_buying"], df["earn_selling"], df["buying_lengths"], df["selling_lengths"]) = overcome.apply(high_low_close)
         assert df["earn_buying"].sum() == df["earn_selling"].sum() * (-1)
         print(df.head(30))
 

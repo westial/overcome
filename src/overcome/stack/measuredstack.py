@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from overcome.stack.stack import Stack, Node
@@ -20,7 +21,7 @@ class MeasuredStack(Stack):
         """
         super().add(content, priority)
         self.__lengths += 1
-        self.__lengths.loc[content] = 0
+        self.__lengths.loc[content] = np.int16(0)
 
     def __remove_length(self, node: Node):
         if node:
