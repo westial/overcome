@@ -153,3 +153,21 @@ Feature: Overcome data addition
     When I apply the overcome to the data frame
     Then the expected earnings match the results
 
+  Scenario: It ignores the NaN values in the column
+    Given a data frame with the following rows
+      | close  | high   | low    | expected_buy_earn | expected_sell_earn | comment  |
+      | 1.0000 | 1.0000 | 1.0000 | 0                 | 0                  | starting |
+      | 1.0000 | 1.0005 | 1.0000 | 0                 | 0                  |          |
+      | 1.0000 | 1.0010 | 1.0000 | 0.0010            | -0.0007            |          |
+      | 1.0000 | 1.0015 | 1.0000 | 0.0010            | -0.0007            |          |
+      | 1.0015 | 1.0015 | 1.0015 | 0.0010            | -0.0007            |          |
+      | 1.0015 | 1.0015 | 1.0010 | -0.0007           | 0.0010             |          |
+      | 1.0015 | 1.0015 | 1.0005 | -0.0007           | 0.0010             |          |
+      | 1.0015 | 1.0015 | 1.0000 | -0.0007           | 0.0010             |          |
+      | 1.0015 | 1.0015 | 1.0000 | -0.0007           | 0.0010             |          |
+      | 1.0015 | 1.0015 | 1.0000 | 0                 | 0                  |          |
+    And a take profit configuration as 0.0010
+    And a stop loss configuration as 0.0007
+    When I apply the overcome over the smoothed values from the target
+    Then the expected earnings match the results
+

@@ -117,6 +117,8 @@ class Overcome:
         )
         with values_iter:
             for index, [high, low, close] in enumerate(values_iter):
+                if np.isnan(close):
+                    continue
                 self.__update_earnings(
                     high,
                     low,

@@ -225,3 +225,23 @@ def step_impl(context, expected_length):
 @step("there is a new value as 0 in a new column about selling length")
 def step_impl(context):
     assert 0 == context.df["selling_lengths"][0]
+
+
+@when("I apply the overcome over the smoothed values from the target")
+def step_impl(context):
+    overcome = Overcome(
+            context.position_threshold,
+            context._take_profit,
+            context._stop_loss,
+            positions_limit=context.buying_limit if "buying_limit" in context else -1,
+            has_counters=True
+    )
+    context.result = context.df
+    high_low_close = context.df[["high", "low", "close"]].rolling(window=3).mean().to_numpy(dtype=np.float32)
+    (
+        context.result["earn_buying"],
+        context.result["earn_selling"],
+        context.result["buying_lengths"],
+        context.result["selling_lengths"],
+    ) = overcome.apply(high_low_close)
+    context.overcome = overcome
