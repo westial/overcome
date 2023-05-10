@@ -6,6 +6,14 @@ with the "high", "low", and "close" values from a stock market product, Overcome
 calculates the potential earnings in both, buying and selling for every step in 
 the timeline.
 
+## Install ##
+
+Install from Pypi repository from at least a Python 3.7.
+
+```
+pip install overcome
+```
+
 ## Usage ##
 
 Instantiate Overcome with the constant value for take profit and stop loss. 
