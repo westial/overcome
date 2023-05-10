@@ -26,8 +26,30 @@ def step_impl(context):
     )
     context.result = context.df
     high_low_close = context.df[["high", "low", "close"]].to_numpy(dtype=np.float32)
-    (context.result["earn_buying"], context.result["earn_selling"]) = \
-        overcome.apply(high_low_close)
+    (
+        context.result["earn_buying"],
+        context.result["earn_selling"]
+    ) = overcome.apply(high_low_close)
+    context.overcome = overcome
+
+
+@when("I apply the overcome with counters to the data frame")
+def step_impl(context):
+    overcome = Overcome(
+            context.position_threshold,
+            context._take_profit,
+            context._stop_loss,
+            positions_limit=context.buying_limit if "buying_limit" in context else -1,
+            has_counters=True
+    )
+    context.result = context.df
+    high_low_close = context.df[["high", "low", "close"]].to_numpy(dtype=np.float32)
+    (
+        context.result["earn_buying"],
+        context.result["earn_selling"],
+        context.result["buying_lengths"],
+        context.result["selling_lengths"],
+    ) = overcome.apply(high_low_close)
     context.overcome = overcome
 
 
@@ -62,6 +84,21 @@ def __append_expected_earnings(context, row):
             np.float32(row["expected_sell_earn"]))
 
 
+def __append_expected_lengths(context, row):
+    if "expected_buy_lengths" not in context:
+        context.expected_buy_lengths = np.array([])
+    if "expected_sell_lengths" not in context:
+        context.expected_sell_lengths = np.array([])
+    if "expected_buy_lengths" in row.headings:
+        context.expected_buy_lengths = np.append(
+            context.expected_buy_lengths,
+            np.float32(row["expected_buy_lengths"]))
+    if "expected_sell_lengths" in row.headings:
+        context.expected_sell_lengths = np.append(
+            context.expected_sell_lengths,
+            np.float32(row["expected_sell_lengths"]))
+
+
 @given("a data frame with the following rows")
 def step_impl(context):
     table = {
@@ -76,6 +113,7 @@ def step_impl(context):
         table["high"].append(np.float32(row["high"]))
         table["low"].append(np.float32(row["low"]))
         __append_expected_earnings(context, row)
+        __append_expected_lengths(context, row)
     context.df = DataFrame(table)
 
 
@@ -135,6 +173,18 @@ def step_impl(context):
     )
 
 
+@then("the expected lengths match the results")
+def step_impl(context):
+    assert np.array_equal(
+        np.sign(np.array(context.df["buying_lengths"])),
+        np.sign(np.array(context.expected_buy_lengths))
+    )
+    assert np.array_equal(
+        np.sign(np.array(context.df["selling_lengths"])),
+        np.sign(np.array(context.expected_buy_lengths))
+    )
+
+
 @given("a data frame with a few rows with a non-numerical index")
 def step_impl(context):
     context.df = DataFrame(
@@ -155,3 +205,43 @@ def step_impl(context):
 @step("a limit at {:d} positions")
 def step_impl(context, count):
     context.buying_limit = int(count)
+
+
+@step("there is a new value as 0 in a new column about buying length")
+def step_impl(context):
+    assert 0 == context.df["buying_lengths"][0]
+
+
+@step('the buying length is {:d}')
+def step_impl(context, expected_length):
+    assert expected_length == context.df["buying_lengths"][0]
+
+
+@step('the selling length is {:d}')
+def step_impl(context, expected_length):
+    assert expected_length == context.df["selling_lengths"][0]
+
+
+@step("there is a new value as 0 in a new column about selling length")
+def step_impl(context):
+    assert 0 == context.df["selling_lengths"][0]
+
+
+@when("I apply the overcome over the smoothed values from the target")
+def step_impl(context):
+    overcome = Overcome(
+            context.position_threshold,
+            context._take_profit,
+            context._stop_loss,
+            positions_limit=context.buying_limit if "buying_limit" in context else -1,
+            has_counters=True
+    )
+    context.result = context.df
+    high_low_close = context.df[["high", "low", "close"]].rolling(window=3).mean().to_numpy(dtype=np.float32)
+    (
+        context.result["earn_buying"],
+        context.result["earn_selling"],
+        context.result["buying_lengths"],
+        context.result["selling_lengths"],
+    ) = overcome.apply(high_low_close)
+    context.overcome = overcome

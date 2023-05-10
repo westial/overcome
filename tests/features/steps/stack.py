@@ -3,7 +3,7 @@ import random
 import numpy as np
 from behave import *
 
-from overcome.stack import Stack
+from overcome.stack.stack import Stack
 
 THRESHOLD = 0.01
 
