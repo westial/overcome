@@ -36,14 +36,22 @@ class Overcome:
             take_profit,
             stop_loss,
             positions_limit=-1,
-            has_counters=False
+            has_counters=False,
+            max_delay=0
     ):
+        """
+        Maximum delay is the maximum number of rows between the position
+        starting row and the position closing one. 0 by defaults means there is
+        no maximum and the position may close wherever it does. That delay
+        control keeps the expectation for fast outcomes only as the most
+        reliable ones. It is set by the input seed.
+        """
         self.__open_buying_lengths = pd.Series(dtype=np.int16)
         self.__open_selling_lengths = pd.Series(dtype=np.int16)
         self.__threshold = threshold
         self.__tp = take_profit
         self.__sl = stop_loss
-        self.__has_counters = has_counters
+        self.__set_counters(has_counters, max_delay)
         self.__open_buying = self.__create_buying_stack()
         self.__open_selling = self.__create_selling_stack()
         self.__evaluation = Evaluation(threshold, take_profit, stop_loss)
@@ -60,6 +68,15 @@ class Overcome:
             remove_for_lose=lambda s: s.shift()
         )
         self.__add_position = self.__create_adding(positions_limit)
+
+    def __set_counters(self, has_counters, max_delay):
+        """
+        Set maximum delay and enable counters
+        
+        Force to enable counters when maximum delay is set
+        """
+        self.__max_delay = max_delay
+        self.__has_counters = True if 0 < max_delay else has_counters
 
     def __create_buying_stack(self):
         if self.__has_counters:
@@ -130,13 +147,32 @@ class Overcome:
                 self.__add_position(index, close, self.__open_buying)
                 self.__add_position(index, close, self.__open_selling)
         if self.__has_counters:
-            return (
+            return self.__ignore_delayed_earnings(
                 earn_buying,
                 earn_selling,
                 self.__normalize(buying_lengths, earn_buying),
                 self.__normalize(selling_lengths, earn_selling)
             )
         return earn_buying, earn_selling
+
+    def __ignore_delayed_earnings(
+            self,
+            earn_buying,
+            earn_selling,
+            buying_lengths,
+            selling_lengths
+    ):
+        if self.__max_delay:
+            delayed_buy_index = buying_lengths > self.__max_delay
+            delayed_sell_index = selling_lengths > self.__max_delay
+            earn_buying[delayed_buy_index] = 0.0
+            earn_selling[delayed_sell_index] = 0.0
+        return (
+            earn_buying,
+            earn_selling,
+            buying_lengths,
+            selling_lengths
+        )
 
     @staticmethod
     def __normalize(values: pd.Series, according_to: np.ndarray) -> np.ndarray:
@@ -267,7 +303,8 @@ class Overcome:
                 read_for_lose, remove_for_lose, lengths
             )
 
-    def __copy_from(self, positions: MeasuredStack, to_lengths: pd.Series, at_index):
+    def __copy_from(self, positions: MeasuredStack, to_lengths: pd.Series,
+                    at_index):
         if not positions.empty() and self.__has_counters:
             to_lengths.loc[at_index] = positions.length_of(at_index) + 1
 
