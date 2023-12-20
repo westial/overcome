@@ -5,11 +5,8 @@ from behave import *
 from overcome.analysis import Analysis
 
 
-@step('predictions as "{values}" from relaxing as {relaxing}, selling as {selling} and buying as {buying}')
-def step_impl(context, values: str, relaxing: int, selling: int, buying: int):
-    context.RELAX_CATEGORY = int(relaxing)
-    context.SELL_CATEGORY = int(selling)
-    context.BUY_CATEGORY = int(buying)
+@step('predictions as "{values}"')
+def step_impl(context, values: str):
     context.predictions = pd.Series([int(v) for v in values.split()])
 
 
@@ -33,5 +30,26 @@ def step_impl(context):
 
 @then("I get a cumulated profit of {:f}")
 def step_impl(context, expected: float):
-    last_profit_result = context.results.cumsum().iloc[-1]
-    assert np.isclose(expected, last_profit_result)
+    cumulated_result = context.results.cumsum().iloc[-1]
+    assert np.isclose(expected, cumulated_result)
+
+
+@then("I get a cumulated loss of {:f}")
+def step_impl(context, expected: float):
+    cumulated_result = context.results.cumsum().iloc[-1]
+    assert np.isclose(-expected, cumulated_result)
+
+
+@step("a relaxing label as {:d}")
+def step_impl(context, value):
+    context.RELAX_CATEGORY = int(value)
+
+
+@step("a selling label as {:d}")
+def step_impl(context, value):
+    context.SELL_CATEGORY = int(value)
+
+
+@step("a buying label as {:d}")
+def step_impl(context, value):
+    context.BUY_CATEGORY = int(value)
