@@ -44,6 +44,12 @@ def __append_expected_overlapped(context, row):
         context.expected_overlapped_buying = np.append(
             context.expected_overlapped_buying,
             np.int16(row["expected_overlapped_buying"]))
+    if "expected_overlapped_selling" not in context:
+        context.expected_overlapped_selling = np.array([])
+    if "expected_overlapped_selling" in row.headings:
+        context.expected_overlapped_selling = np.append(
+            context.expected_overlapped_selling,
+            np.int16(row["expected_overlapped_selling"]))
 
 
 def __append_expected_earnings(context, row):

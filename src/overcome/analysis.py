@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 
 from overcome.calculator.outcomeprofits import OutcomeProfits
-from overcome.overcome import Overcome
 from overcome.position.evaluation import Evaluation
 from overcome.stack.stack import Stack, Node
 
@@ -35,23 +34,9 @@ class Analysis:
         self.__overlapped_selling_counter = 0
         self.__evaluation = Evaluation(position_threshold, take_profit, stop_loss)
         self.__earn_buying = {}
+        self.__earn_selling = {}
 
     def apply(self, predicted: pd.Series, ohlcv: pd.DataFrame):
-        data = ohlcv.copy(deep=True)
-        overcome = Overcome(self.__threshold, self.__tp, self.__sl)
-        (data["earn_buying"], data["earn_selling"]) = overcome.apply(
-            ohlcv[["high", "low", "close"]].to_numpy(dtype=np.float32)
-        )
-        missing_index = predicted.index.difference(data.index)
-        same_index_data = data[~data.index.isin(missing_index)]
-        same_index_data["operation"] = predicted
-        same_index_data["overlapped_buying"] = 1
-        return {
-            "profits": self.__outcome_profits.calculate(same_index_data),
-            "overlapped_buying": same_index_data["overlapped_buying"]
-        }
-
-    def X_apply(self, predicted: pd.Series, ohlcv: pd.DataFrame):
         missing_index = predicted.index.difference(ohlcv.index)
         data = ohlcv[~ohlcv.index.isin(missing_index)]
         data["operation"] = predicted
@@ -64,15 +49,22 @@ class Analysis:
             # OHLCV's closing value maps to price as value for a new position
             for index, [high, low, price, operation] in enumerate(values_iter):
                 self.__set_overlapped_buying_at(index)
+                self.__set_overlapped_selling_at(index)
                 self.__close_buying_positions_with(high, low, index)
+                self.__close_selling_positions_with(high, low, index)
                 self.__add_position_for(operation, index, price)
         return {
-            "profits": pd.Series(self.__earn_buying, index=data.index).fillna(0),
-            "overlapped_buying": pd.Series(self.__overlapped_buying, index=data.index).fillna(0)
+            "profits_buying": pd.Series(self.__earn_buying, index=data.index, dtype=np.float32).fillna(0),
+            "profits_selling": pd.Series(self.__earn_selling, index=data.index, dtype=np.float32).fillna(0),
+            "overlapped_buying": pd.Series(self.__overlapped_buying, index=data.index),
+            "overlapped_selling": pd.Series(self.__overlapped_selling, index=data.index)
         }
 
     def __set_overlapped_buying_at(self, index):
         self.__overlapped_buying[index] = self.__overlapped_buying_counter
+
+    def __set_overlapped_selling_at(self, index):
+        self.__overlapped_selling[index] = self.__overlapped_selling_counter
 
     def __add_position_for(self, operation: int, index, value):
         """
@@ -90,7 +82,7 @@ class Analysis:
         elif self.__sell_category == operation:
             self.__open_selling.add(index, value)
             self.__increase_overlapped_selling()
-            self.__set_overlapped_buying_at(index)
+            self.__set_overlapped_selling_at(index)
 
     def __increase_overlapped_buying(self):
         self.__overlapped_buying_counter += 1
@@ -110,6 +102,18 @@ class Analysis:
             self.__decrease_overlapped_buying()
             return self.__evaluate_buying_to_win(high, low, index)
 
+    def __evaluate_selling_to_win(self, high: np.float32, low: np.float32, index):
+        if self.__open_selling.empty():
+            return
+        node: Node = self.__open_selling.tail()
+        node_index = node.content
+        result = self.__evaluation.evaluate_selling(node.priority, high, low)
+        if Evaluation.WINS == result:
+            self.__open_selling.pop()
+            self.__earn_selling[node_index] = self.__tp
+            self.__decrease_overlapped_selling()
+            return self.__evaluate_selling_to_win(high, low, index)
+
     def __evaluate_buying_to_lose(self, high: np.float32, low: np.float32, index):
         if self.__open_buying.empty():
             return
@@ -122,13 +126,34 @@ class Analysis:
             self.__decrease_overlapped_buying()
             return self.__evaluate_buying_to_lose(high, low, index)
 
+    def __evaluate_selling_to_lose(self, high: np.float32, low: np.float32, index):
+        if self.__open_selling.empty():
+            return
+        node: Node = self.__open_selling.head()
+        node_index = node.content
+        result = self.__evaluation.evaluate_selling(node.priority, high, low)
+        if Evaluation.LOSES == result:
+            self.__open_selling.shift()
+            self.__earn_selling[node_index] = -self.__sl
+            self.__decrease_overlapped_selling()
+            return self.__evaluate_selling_to_lose(high, low, index)
+
     def __close_buying_positions_with(self, high: np.float32, low: np.float32, index):
         if not self.__open_buying.empty():
             self.__evaluate_buying_to_win(high, low, index)
         if not self.__open_buying.empty():
             self.__evaluate_buying_to_lose(high, low, index)
 
+    def __close_selling_positions_with(self, high: np.float32, low: np.float32, index):
+        if not self.__open_selling.empty():
+            self.__evaluate_selling_to_win(high, low, index)
+        if not self.__open_selling.empty():
+            self.__evaluate_selling_to_lose(high, low, index)
+
     def __decrease_overlapped_buying(self):
         self.__overlapped_buying_counter -= 1
+
+    def __decrease_overlapped_selling(self):
+        self.__overlapped_selling_counter -= 1
 
 
