@@ -102,11 +102,11 @@ def step_impl(context):
 def step_impl(context):
     assert np.array_equal(
         np.sign(np.array(context.df["earn_buying"])),
-        np.sign(np.array(context.expected_to_earn_buying))
+        np.sign(np.array(context.expected_buy_earn))
     )
     assert np.array_equal(
         np.sign(np.array(context.df["earn_selling"])),
-        np.sign(np.array(context.expected_to_earn_selling))
+        np.sign(np.array(context.expected_sell_earn))
     )
 
 

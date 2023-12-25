@@ -33,21 +33,31 @@ def step_impl(context):
         table["low"].append(np.float32(row["low"]))
         __append_expected_earnings(context, row)
         __append_expected_lengths(context, row)
+        __append_expected_overlapped(context, row)
     context.df = DataFrame(table)
 
 
+def __append_expected_overlapped(context, row):
+    if "expected_overlapped_buying" not in context:
+        context.expected_overlapped_buying = np.array([])
+    if "expected_overlapped_buying" in row.headings:
+        context.expected_overlapped_buying = np.append(
+            context.expected_overlapped_buying,
+            np.int16(row["expected_overlapped_buying"]))
+
+
 def __append_expected_earnings(context, row):
-    if "expected_to_earn_buying" not in context:
-        context.expected_to_earn_buying = np.array([])
-    if "expected_to_earn_selling" not in context:
-        context.expected_to_earn_selling = np.array([])
+    if "expected_buy_earn" not in context:
+        context.expected_buy_earn = np.array([])
+    if "expected_sell_earn" not in context:
+        context.expected_sell_earn = np.array([])
     if "expected_buy_earn" in row.headings:
-        context.expected_to_earn_buying = np.append(
-            context.expected_to_earn_buying,
+        context.expected_buy_earn = np.append(
+            context.expected_buy_earn,
             np.float32(row["expected_buy_earn"]))
     if "expected_sell_earn" in row.headings:
-        context.expected_to_earn_selling = np.append(
-            context.expected_to_earn_selling,
+        context.expected_sell_earn = np.append(
+            context.expected_sell_earn,
             np.float32(row["expected_sell_earn"]))
 
 
