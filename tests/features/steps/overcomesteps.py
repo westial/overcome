@@ -40,7 +40,8 @@ def step_impl(context):
             context._take_profit,
             context._stop_loss,
             positions_limit=context.buying_limit if "buying_limit" in context else -1,
-            has_counters=True
+            has_counters=True,
+            max_delay=context.max_delay if "max_delay" in context else 0
     )
     context.result = context.df
     high_low_close = context.df[["high", "low", "close"]].to_numpy(dtype=np.float32)
@@ -182,3 +183,18 @@ def step_impl(context):
         context.result["selling_lengths"],
     ) = overcome.apply(high_low_close)
     context.overcome = overcome
+
+
+@given("a maximum delay of {:d} steps")
+def step_impl(context, max_delay):
+    context.max_delay = max_delay
+
+
+@step("the last row value is ignored by the second row due to delay")
+def step_impl(context):
+    assert np.isclose(0, context.df["earn_buying"][1], 0.00001)
+
+
+@step("the last row value is not ignored by the second row due to delay")
+def step_impl(context):
+    assert context._take_profit == context.df["earn_buying"][1]

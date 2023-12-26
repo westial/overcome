@@ -23,6 +23,35 @@ Feature: Overcome data addition
     Then the starting position earnings for buying value is equal to the take profit
     And the buying length is 1
 
+  Scenario: It ignores to take profit on buying after reaching the maximum delay
+    Given a maximum delay of 3 steps
+    And a data frame with the following rows
+      | close  | high   | low    | comment         |
+      | 1.0000 | 1.0000 | 1.0000 | starting        |
+      | 1.0005 | 1.0010 | 1.0000 | delayed         |
+      | 1.0010 | 1.0011 | 1.0000 |                 |
+      | 1.0000 | 1.0012 | 1.0000 |                 |
+      | 1.0000 | 1.0013 | 1.0000 |                 |
+      | 1.0000 | 1.0015 | 1.0000 | high is ignored |
+    And a take profit configuration as 0.0010
+    When I apply the overcome with counters to the data frame
+    Then the starting position earnings for buying value is equal to the take profit
+    And the last row value is ignored by the second row due to delay
+
+  Scenario: It has no maximum delay
+    Given a data frame with the following rows
+      | close  | high   | low    | comment         |
+      | 1.0000 | 1.0000 | 1.0000 | starting        |
+      | 1.0005 | 1.0010 | 1.0000 | delayed         |
+      | 1.0010 | 1.0011 | 1.0000 |                 |
+      | 1.0000 | 1.0012 | 1.0000 |                 |
+      | 1.0000 | 1.0013 | 1.0000 |                 |
+      | 1.0000 | 1.0015 | 1.0000 | high is ignored |
+    And a take profit configuration as 0.0010
+    When I apply the overcome with counters to the data frame
+    Then the starting position earnings for buying value is equal to the take profit
+    And the last row value is not ignored by the second row due to delay
+
   Scenario: It ignores the starting point high to check the earnings value on buying for the same starting point row
     Given a data frame with the following rows
       | close  | high   | low    | comment  |

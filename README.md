@@ -71,7 +71,46 @@ outcome = Overcome(
     )
 ```
 
+#### Counters and maximum delay ####
 
+Boolean `has_counters` is an optional constructor argument to ask for a counter
+for each, buying and selling positions, with the number of steps between the
+position starting and closing steps. These optional information comes in the
+returning tuple as two new items.
+
+```python
+outcome = Overcome(
+        threshold=np.float32(0.00001),
+        take_profit=np.float32(0.001),
+        stop_loss=np.float32(0.001),
+        positions_limit=10,
+        has_counters=True
+    )
+earn_buying, earn_selling, buying_lengths, selling_lengths = \
+    outcome.apply(high_low_close)
+```
+
+Having the number of steps of every operation lets us filter out the longer
+operations in order to get only the fastest ones, apparently the most accurate 
+ones. The integer type optional argument `max_delay` makes to ignore the earnings
+from the operations longer than the maximum steps set in this value. In the
+following example, the earnings from the positions with more than 10 steps will
+be ignored and set to 0.
+
+Setting a value over 0 to `max_delay` forces `has_counters` to enable in order
+to get the required counts. So, the returning tuple length is 4 as well.
+
+```python
+outcome = Overcome(
+        threshold=np.float32(0.00001),
+        take_profit=np.float32(0.001),
+        stop_loss=np.float32(0.001),
+        positions_limit=10,
+        max_delay=10
+    )
+earn_buying, earn_selling, buying_lengths, selling_lengths = \
+    outcome.apply(high_low_close)
+```
 
 ### Input from a dataframe ###
 
