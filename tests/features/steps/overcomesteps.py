@@ -70,68 +70,10 @@ def step_impl(context):
     assert 0 == context.df["earn_selling"][0]
 
 
-def __append_expected_earnings(context, row):
-    if "expected_to_earn_buying" not in context:
-        context.expected_to_earn_buying = np.array([])
-    if "expected_to_earn_selling" not in context:
-        context.expected_to_earn_selling = np.array([])
-    if "expected_buy_earn" in row.headings:
-        context.expected_to_earn_buying = np.append(
-            context.expected_to_earn_buying,
-            np.float32(row["expected_buy_earn"]))
-    if "expected_sell_earn" in row.headings:
-        context.expected_to_earn_selling = np.append(
-            context.expected_to_earn_selling,
-            np.float32(row["expected_sell_earn"]))
-
-
-def __append_expected_lengths(context, row):
-    if "expected_buy_lengths" not in context:
-        context.expected_buy_lengths = np.array([])
-    if "expected_sell_lengths" not in context:
-        context.expected_sell_lengths = np.array([])
-    if "expected_buy_lengths" in row.headings:
-        context.expected_buy_lengths = np.append(
-            context.expected_buy_lengths,
-            np.float32(row["expected_buy_lengths"]))
-    if "expected_sell_lengths" in row.headings:
-        context.expected_sell_lengths = np.append(
-            context.expected_sell_lengths,
-            np.float32(row["expected_sell_lengths"]))
-
-
-@given("a data frame with the following rows")
-def step_impl(context):
-    table = {
-        "close": [],
-        "high": [],
-        "low": [],
-    }
-    for index, row in enumerate(context.table):
-        if "starting" == row["comment"]:
-            context.starting_index = index
-        table["close"].append(np.float32(row["close"]))
-        table["high"].append(np.float32(row["high"]))
-        table["low"].append(np.float32(row["low"]))
-        __append_expected_earnings(context, row)
-        __append_expected_lengths(context, row)
-    context.df = DataFrame(table)
-
-
-@step("a take profit configuration as {tp}")
-def step_impl(context, tp):
-    context._take_profit = np.float32(tp)
-
-
 @then(
     "the starting position earnings for buying value is equal to the take profit")
 def step_impl(context):
     assert context._take_profit == context.df["earn_buying"][0]
-
-
-@step("a position precision threshold of {threshold}")
-def step_impl(context, threshold):
-    context.position_threshold = float(threshold)
 
 
 @then("the starting position earnings for buying value is still nothing")
@@ -143,11 +85,6 @@ def step_impl(context):
     "the starting position earnings for selling value is equal to the take profit")
 def step_impl(context):
     assert context._take_profit == context.df["earn_selling"][0]
-
-
-@step("a stop loss configuration as {sl}")
-def step_impl(context, sl):
-    context._stop_loss = np.float32(sl)
 
 
 @then(
@@ -166,11 +103,11 @@ def step_impl(context):
 def step_impl(context):
     assert np.array_equal(
         np.sign(np.array(context.df["earn_buying"])),
-        np.sign(np.array(context.expected_to_earn_buying))
+        np.sign(np.array(context.expected_buy_earn))
     )
     assert np.array_equal(
         np.sign(np.array(context.df["earn_selling"])),
-        np.sign(np.array(context.expected_to_earn_selling))
+        np.sign(np.array(context.expected_sell_earn))
     )
 
 
