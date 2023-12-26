@@ -1,26 +1,35 @@
-Overcome
-========
+Overcome and Analysis
+=====================
+
+While Overcome provides the operation that fits for every OHLV row, in a history
+input data set; Analysis provides the profits and number of overlapped opened
+positions for a given data set, with fulfilled operations.
 
 Given a constant take profit and a stop loss, and a time base sorted data vector 
 with the "high", "low", and "close" values from a stock market product, Overcome 
 calculates the potential earnings in both, buying and selling for every step in 
 the timeline.
 
+Analysis by the other hand is a calculation after an operation has been already
+set. It counts the overlapped buying and selling positions, separately, and the
+profits for both as well.
+
 ## Install ##
 
 Install from Pypi repository from at least a Python 3.7.
 
-```
+```shell
 pip install overcome
 ```
 
-## Usage ##
+## Overcome usage ##
 
 Instantiate Overcome with the constant value for take profit and stop loss. 
 A value for the precision threshold is required as well. The precision threshold
 applies on whether a "close" value is close to the take profit or stop loss 
 boundaries.
-```
+
+```python
 outcome = Overcome(
         threshold=np.float32(0.00001),
         take_profit=np.float32(0.001),
@@ -34,7 +43,7 @@ structure is a numpy array with a shape of (LENGTH, 3).
 The order of the 3 columns is very strict. The first one is for the "high" 
 values, the second one for the "low" values and the third one for "close" values.
 
-```
+```python
 earn_buying, earn_selling = outcome.apply(high_low_close)
 ```
 
@@ -53,7 +62,7 @@ following ones won't open, and then they are not accountable for profit or loss.
 Creating an Overcome instance with opened positions limited at 10 for buying and 
 10 for selling is as follows.
 
-```
+```python
 outcome = Overcome(
         threshold=np.float32(0.00001),
         take_profit=np.float32(0.001),
@@ -69,14 +78,14 @@ outcome = Overcome(
 Starting with a Dataframe as `df` from any product historical data, convert the 
 columns into the required input by the following expression.
 
-```
+```python
 high_low_close = df[["high", "low", "close"]].to_numpy(dtype=np.float32)
 ```
         
 Then apply the calculation and merge the result into the original Dataframe as 
 follows.
 
-```
+```python
 (df["earn_buying"], df["earn_selling"]) = outcome.apply(high_low_close)
 ```
 
@@ -105,6 +114,25 @@ The configuration for take profit for this example is 0.001 and the stop loss is
 |2022-04-01 00:10:00|1.001|1.0015|0.9995|-0.0007|0.001|
 |2022-04-01 00:11:00|1.001|1.0015|0.9993|-0.0007|0.001|
 |2022-04-01 00:12:00|1.001|1.0016|0.999|0.0|0.0|
+
+## Analysis usage ##
+
+Instantiate Analysis by giving an integer type constant for every distinct
+operation: relax, selling, buying.
+
+```python
+analysis = Analysis(
+        threshold=np.float32(0.00001),
+        take_profit=np.float32(0.001),
+        stop_loss=np.float32(0.001),
+        categories={
+            "relax": 0,
+            "sell": 1,
+            "buy": 2
+        }
+)
+results = analysis.apply(predictions, ohlv_dataframe)
+```
 
 ## Test and development ## 
 

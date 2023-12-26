@@ -10,12 +10,25 @@ from overcome.stack.stack import Stack, Node
 class Analysis:
     def __init__(
             self,
-            position_threshold: np.float32,
+            threshold: np.float32,
             take_profit: np.float32,
             stop_loss: np.float32,
-            categories: dict
+            categories: dict[str: int, str: int, str: int]
     ):
-        self.__threshold = position_threshold
+        """
+        This method initializes the instance variables of the class. It takes in the threshold, take_profit,
+        stop_loss, and categories parameters and assigns them to the corresponding instance variables. It also creates
+        other required instance variables such as stacks for buying and selling, dictionaries for overlapped buying
+        and selling, counters for overlapped buying and selling, an Evaluation object, and dictionaries for earnings
+        from buying and selling.
+
+        :param threshold: The threshold value to consider for buying or selling a stock. Must be a float.
+        :param take_profit: The take profit value for a stock. Must be a float.
+        :param stop_loss: The stop loss value for a stock. Must be a float.
+        :param categories: A dictionary containing the "relax", "sell", and "buy" categories for the stock,
+        exactly with that keys "relax", "sell", and "buy" and an integer as value.
+        """
+        self.__threshold = threshold
         self.__tp = take_profit
         self.__sl = stop_loss
         self.__relax_category, self.__sell_category, self.__buy_category = (
@@ -28,7 +41,7 @@ class Analysis:
         self.__overlapped_buying_counter = 0
         self.__overlapped_selling_counter = 0
         self.__evaluation = Evaluation(
-            position_threshold,
+            threshold,
             take_profit,
             stop_loss
         )
