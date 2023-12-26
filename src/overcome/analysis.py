@@ -3,7 +3,6 @@ from operator import itemgetter
 import numpy as np
 import pandas as pd
 
-from overcome.calculator.outcomeprofits import OutcomeProfits
 from overcome.position.evaluation import Evaluation
 from overcome.stack.stack import Stack, Node
 
@@ -22,43 +21,56 @@ class Analysis:
         self.__relax_category, self.__sell_category, self.__buy_category = (
             itemgetter("relax", "sell", "buy")(categories)
         )
-        self.__outcome_profits = OutcomeProfits(
-            buy_category=self.__buy_category,
-            sell_category=self.__sell_category
-        )
         self.__open_buying = Stack()
         self.__open_selling = Stack()
         self.__overlapped_buying = {}
         self.__overlapped_selling = {}
         self.__overlapped_buying_counter = 0
         self.__overlapped_selling_counter = 0
-        self.__evaluation = Evaluation(position_threshold, take_profit, stop_loss)
+        self.__evaluation = Evaluation(
+            position_threshold,
+            take_profit,
+            stop_loss
+        )
         self.__earn_buying = {}
         self.__earn_selling = {}
 
-    def apply(self, predicted: pd.Series, ohlcv: pd.DataFrame):
+    def apply(self, predicted: pd.Series, ohlcv: pd.DataFrame) -> dict:
+        """
+        Apply predicted values to the OHLCV data to calculate profits and
+        overlapped positions.
+
+        :param predicted: Predicted values of the operation.
+        :param ohlcv: OHLCV data containing high, low, close values.
+        :return: Dictionary containing calculated profits and overlapped
+        positions. The returned dictionary keys are profits_buying,
+        profits_selling, overlapped_buying, overlapped_selling.
+        """
         missing_index = predicted.index.difference(ohlcv.index)
         data = ohlcv[~ohlcv.index.isin(missing_index)]
         data["operation"] = predicted
-        values_iter = np.nditer(
-            data[["high", "low", "close", "operation"]],
-            order='C',
-            flags=['external_loop']
-        )
-        with values_iter:
-            # OHLCV's closing value maps to price as value for a new position
-            for index, [high, low, price, operation] in enumerate(values_iter):
-                self.__set_overlapped_buying_at(index)
-                self.__set_overlapped_selling_at(index)
-                self.__close_buying_positions_with(high, low, index)
-                self.__close_selling_positions_with(high, low, index)
-                self.__add_position_for(operation, index, price)
+        for index, row in data.iterrows():
+            self.__set_all_overlapped_at(index)
+            self.__close_positions_with(row["high"], row["low"], index)
+            self.__add_position_for(row["operation"], index, row["close"])
         return {
-            "profits_buying": pd.Series(self.__earn_buying, index=data.index, dtype=np.float32).fillna(0),
-            "profits_selling": pd.Series(self.__earn_selling, index=data.index, dtype=np.float32).fillna(0),
-            "overlapped_buying": pd.Series(self.__overlapped_buying, index=data.index),
-            "overlapped_selling": pd.Series(self.__overlapped_selling, index=data.index)
+            "profits_buying": pd.Series(
+                self.__earn_buying, index=data.index, dtype=np.float32
+            ).fillna(0),
+            "profits_selling": pd.Series(
+                self.__earn_selling, index=data.index, dtype=np.float32
+            ).fillna(0),
+            "overlapped_buying": pd.Series(
+                self.__overlapped_buying, index=data.index
+            ),
+            "overlapped_selling": pd.Series(
+                self.__overlapped_selling, index=data.index
+            )
         }
+
+    def __set_all_overlapped_at(self, index):
+        self.__set_overlapped_buying_at(index)
+        self.__set_overlapped_selling_at(index)
 
     def __set_overlapped_buying_at(self, index):
         self.__overlapped_buying[index] = self.__overlapped_buying_counter
@@ -70,25 +82,19 @@ class Analysis:
         """
         Adds a position for the specified operation, index, and value.
 
-        :param operation: The operation category (either __buy_category or __sell_category).
+        :param operation: The operation category.
         :param index: The index at which to add the position.
         :param value: The value of the position being added.
         :return: None
         """
         if self.__buy_category == operation:
             self.__open_buying.add(index, value)
-            self.__increase_overlapped_buying()
+            self.__overlapped_buying_counter += 1
             self.__set_overlapped_buying_at(index)
         elif self.__sell_category == operation:
             self.__open_selling.add(index, value)
-            self.__increase_overlapped_selling()
+            self.__overlapped_selling_counter += 1
             self.__set_overlapped_selling_at(index)
-
-    def __increase_overlapped_buying(self):
-        self.__overlapped_buying_counter += 1
-
-    def __increase_overlapped_selling(self):
-        self.__overlapped_selling_counter += 1
 
     def __evaluate_buying_to_win(self, high: np.float32, low: np.float32, index):
         if self.__open_buying.empty():
@@ -138,17 +144,29 @@ class Analysis:
             self.__decrease_overlapped_selling()
             return self.__evaluate_selling_to_lose(high, low, index)
 
-    def __close_buying_positions_with(self, high: np.float32, low: np.float32, index):
-        if not self.__open_buying.empty():
-            self.__evaluate_buying_to_win(high, low, index)
-        if not self.__open_buying.empty():
-            self.__evaluate_buying_to_lose(high, low, index)
+    def __close_positions_with(self, high: np.float32, low: np.float32, index):
+        self.__close_buying_positions_with(high, low, index)
+        self.__close_selling_positions_with(high, low, index)
 
     def __close_selling_positions_with(self, high: np.float32, low: np.float32, index):
-        if not self.__open_selling.empty():
-            self.__evaluate_selling_to_win(high, low, index)
-        if not self.__open_selling.empty():
-            self.__evaluate_selling_to_lose(high, low, index)
+        closing = [
+            self.__evaluate_buying_to_win,
+            self.__evaluate_buying_to_lose,
+            self.__evaluate_selling_to_win,
+            self.__evaluate_selling_to_lose
+        ]
+        while closing and not self.__open_selling.empty():
+            closing.pop(0)(high, low, index)
+
+    def __close_buying_positions_with(self, high: np.float32, low: np.float32, index):
+        closing = [
+            self.__evaluate_buying_to_win,
+            self.__evaluate_buying_to_lose,
+            self.__evaluate_selling_to_win,
+            self.__evaluate_selling_to_lose
+        ]
+        while closing and not self.__open_buying.empty():
+            closing.pop(0)(high, low, index)
 
     def __decrease_overlapped_buying(self):
         self.__overlapped_buying_counter -= 1
