@@ -177,7 +177,7 @@ results = analysis.apply(predictions, ohlcv_dataframe)
 
 There is a service that in a regular alternate way, sets off the given active
 positions like buying or selling. This service is an optional dependency of 
-Analysis, so it allow to analyze the given operations, by minimizing them in 
+Analysis, so it allows to analyze the given operations, by minimizing them in 
 the way on.
 
 The following example, sets off 2 of 3 positions. Starting at the second row of 
