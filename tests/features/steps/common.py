@@ -80,3 +80,18 @@ def __append_expected_lengths(context, row):
         context.expected_sell_lengths = np.append(
             context.expected_sell_lengths,
             np.float32(row["expected_sell_lengths"]))
+
+
+@step("a relaxing label as {:d}")
+def step_impl(context, value):
+    context.RELAX_CATEGORY = int(value)
+
+
+@step("a selling label as {:d}")
+def step_impl(context, value):
+    context.SELL_CATEGORY = int(value)
+
+
+@step("a buying label as {:d}")
+def step_impl(context, value):
+    context.BUY_CATEGORY = int(value)

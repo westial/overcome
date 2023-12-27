@@ -3,6 +3,7 @@ import pandas as pd
 from behave import *
 
 from overcome.analysis import Analysis
+from overcome.minimizer.regularcostminimizer import RegularCostMinimizer
 
 
 @step('predictions as "{values}"')
@@ -12,16 +13,12 @@ def step_impl(context, values: str):
 
 @when("I analyze the predictions")
 def step_impl(context):
-    analysis = Analysis(
-            context.position_threshold,
-            context._take_profit,
-            context._stop_loss,
-            categories={
-                "relax": context.RELAX_CATEGORY,
-                "sell": context.SELL_CATEGORY,
-                "buy": context.BUY_CATEGORY
-            }
-    )
+    analysis = Analysis(context.position_threshold, context._take_profit,
+                        context._stop_loss, categories={
+            "relax": context.RELAX_CATEGORY,
+            "sell": context.SELL_CATEGORY,
+            "buy": context.BUY_CATEGORY
+        })
     context.results = analysis.apply(
         context.predictions,
         context.df
@@ -40,21 +37,6 @@ def step_impl(context, expected: float):
     profits = context.results["profits_buying"].add(context.results["profits_selling"])
     cumulated_result = profits.cumsum().iloc[-1]
     assert np.isclose(-expected, cumulated_result)
-
-
-@step("a relaxing label as {:d}")
-def step_impl(context, value):
-    context.RELAX_CATEGORY = int(value)
-
-
-@step("a selling label as {:d}")
-def step_impl(context, value):
-    context.SELL_CATEGORY = int(value)
-
-
-@step("a buying label as {:d}")
-def step_impl(context, value):
-    context.BUY_CATEGORY = int(value)
 
 
 @then("I get all expected sell earnings")
@@ -93,4 +75,23 @@ def step_impl(context):
     assert np.array_equal(
         context.expected_overlapped_selling,
         context.results["overlapped_selling"]
+    )
+
+
+@when("I analyze the predictions minimizing the cost to half")
+def step_impl(context):
+    analysis = Analysis(
+            context.position_threshold,
+            context._take_profit,
+            context._stop_loss,
+            categories={
+                "relax": context.RELAX_CATEGORY,
+                "sell": context.SELL_CATEGORY,
+                "buy": context.BUY_CATEGORY
+            },
+            minimizer=RegularCostMinimizer(context.RELAX_CATEGORY, 1)
+    )
+    context.results = analysis.apply(
+        context.predictions,
+        context.df
     )

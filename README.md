@@ -1,7 +1,7 @@
 Overcome and Analysis
 =====================
 
-While Overcome provides the operation that fits for every OHLV row, in a history
+While Overcome provides the operation that fits for every OHLCV row, in a history
 input data set; Analysis provides the profits and number of overlapped opened
 positions for a given data set, with fulfilled operations.
 
@@ -170,7 +170,34 @@ analysis = Analysis(
             "buy": 2
         }
 )
-results = analysis.apply(predictions, ohlv_dataframe)
+results = analysis.apply(predictions, ohlcv_dataframe)
+```
+
+### Minimizing costs ###
+
+There is a service that in a regular alternate way, sets off the given active
+positions like buying or selling. This service is an optional dependency of 
+Analysis, so it allow to analyze the given operations, by minimizing them in 
+the way on.
+
+The following example, sets off 2 of 3 positions. Starting at the second row of 
+the given operations due to the RegularCostMinimizer's offset optional argument.
+
+```python
+RELAX_CATEGORY = 0
+
+analysis = Analysis(
+        threshold=np.float32(0.00001),
+        take_profit=np.float32(0.001),
+        stop_loss=np.float32(0.001),
+        categories={
+            "relax": RELAX_CATEGORY,
+            "sell": 1,
+            "buy": 2
+        },
+        minimizer=RegularCostMinimizer(RELAX_CATEGORY, 2, offset=1)
+)
+results = analysis.apply(predictions, ohlcv_dataframe)
 ```
 
 ## Test and development ## 

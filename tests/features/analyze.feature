@@ -155,3 +155,28 @@ Feature: Overcome analysis
     Then I get all expected sell earnings
     And I get the amount of overlapped buying positions
     And I get the amount of overlapped selling positions
+
+  Scenario: calculates losses and profits with half of the original given operations cost
+    Given a take profit configuration as 0.0010
+    And a stop loss configuration as 0.0007
+    And a data frame with the following rows
+      | index | posit | close  | high   | low    | expected_buy_earn | expected_sell_earn | expected_overlapped_buying | expected_overlapped_selling | comment                 |
+      | 0     | 1     | 1.0000 | 1.0000 | 1.0000 | 0                 | -0.0007            | 0                          | 1                           | starting                |
+      | 1     | 0     | 1.0000 | 1.0000 | 1.0000 | 0                 | 0                  | 0                          | 1                           |                         |
+      | 2     | 0     | 1.0005 | 1.0007 | 1.0000 | 0                 | 0                  | 0                          | 1                           | sell 0 loses            |
+      | 3     | 0     | 1.0005 | 1.0010 | 1.0001 | 0                 | 0                  | 0                          | 0                           |                         |
+      | 4     | 2     | 1.0006 | 1.0010 | 1.0002 | 0.0010            | 0                  | 1                          | 0                           |                         |
+      | 5     | 0     | 1.0007 | 1.0011 | 1.0000 | 0                 | 0                  | 1                          | 0                           |                         |
+      | 6     | 1     | 1.0010 | 1.0012 | 1.0004 | 0                 | 0.0010             | 1                          | 1                           |                         |
+      | 7     | 0     | 1.0009 | 1.0013 | 1.0005 | 0                 | 0                  | 1                          | 1                           |                         |
+      | 8     | 0     | 1.0010 | 1.0015 | 1.0006 | 0                 | 0                  | 1                          | 1                           |                         |
+      | 9     | 0     | 1.0010 | 1.0016 | 1.0000 | 0                 | 0                  | 1                          | 1                           | buy 4 wins, sell 6 wins |
+      | 10    | 2     | 1.0010 | 1.0015 | 0.9993 | -0.0007           | 0                  | 1                          | 0                           |                         |
+      | 11    | 0     | 1.0010 | 1.0016 | 0.9990 | 0                 | 0                  | 1                          | 0                           | buy 10 loses            |
+      | 12    | 0     | 1.0010 | 1.0016 | 0.9990 | 0                 | 0                  | 0                          | 0                           |                         |
+    And predictions as "1 2 0 1 2 0 1 2 0 1 2 0 0"
+    When I analyze the predictions minimizing the cost to half
+    Then I get all expected buy earnings
+    Then I get all expected sell earnings
+    And I get the amount of overlapped buying positions
+    And I get the amount of overlapped selling positions

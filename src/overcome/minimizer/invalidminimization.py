@@ -1,0 +1,2 @@
+class InvalidMinimization(ValueError):
+    pass
